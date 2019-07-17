@@ -12,8 +12,14 @@ class Client():
     """Base HTTP client for admin and stream"""
 
     def _make_request(self, method, url, payload, headers):
+        path = '/' + url if not url.startswith('/') else url
+        url_with_path = GLOBAL_BASE_URL + path
+        print("%s %s" % (method, url_with_path))
         response = requests.request(
-            method=method, url="%s/%s" % (GLOBAL_BASE_URL, url), json=payload, headers=headers
+            method=method,
+            url=url_with_path,
+            json=payload,
+            headers=headers
         )
         return response
 
