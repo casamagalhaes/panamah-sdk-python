@@ -4,7 +4,7 @@ import re
 import shutil
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from .test_routes import routes
+from .routes import routes
 
 #https://gist.github.com/tliron/8e9757180506f25e46d9
 class TestHTTPServer(BaseHTTPRequestHandler):

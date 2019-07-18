@@ -1,6 +1,6 @@
 import unittest
 from panamah_sdk.client import AdminClient, StreamClient
-from .test_server import start as start_test_server, stop as stop_test_server
+from .server import start as start_test_server, stop as stop_test_server
 
 class TestClient(unittest.TestCase):
     @classmethod
