@@ -1,9 +1,9 @@
-import unittest
+from unittest import main, mock, TestCase
 from panamah_sdk.client import AdminClient, StreamClient
 from .server import start as start_test_server, stop as stop_test_server, set_next_response, clear_next_response
 
 
-class TestClient(unittest.TestCase):
+class TestClient(TestCase):
     @classmethod
     def setUpClass(cls):
         start_test_server()
@@ -32,9 +32,24 @@ class TestClient(unittest.TestCase):
     def test_stream_client(self):
         """testing stream client"""
         client = StreamClient("auth", "secret")
-        response = client.post("/stream/data", {"s": 1})
-        self.assertEqual(response.status_code, 200)
+        with mock.patch.object(client, '_authenticate') as authenticate_method:
+            authenticate_method.return_value = {
+                'accessToken': '123',
+                'refreshToken': 'refresh_12983123',
+            }
+            response = client.post("/stream/data", {"s": 1})
+            authenticate_method.assert_called_once_with('auth', 'secret', '*')
+            self.assertEqual(response.status_code, 200)
+            with mock.patch.object(client, '_refresh_tokens') as refresh_method:
+                refresh_method.return_value = {
+                    'accessToken': 'a501925913',
+                    'refreshToken': 'b284422321',
+                }
+                set_next_response(403, {})
+                response = client.post("/stream/data", {"s": 1})
+                clear_next_response()
+                refresh_method.assert_called_once_with('refresh_12983123')
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

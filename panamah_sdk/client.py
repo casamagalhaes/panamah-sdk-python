@@ -81,13 +81,14 @@ class StreamClient(Client):
         self.assinante_id = assinante_id
         self._tokens = None
 
-    def _authenticate(self):
+    def _authenticate(self, authorization_token, secret, assinante_id):
+        print('\n\n===================++++> AUTH <++++=====================\n\n')
         timestamp = int(time.time())
         payload = {
-            "assinanteId": self.assinante_id,
+            "assinanteId": assinante_id,
             "key": self._calculate_key(
-                self.secret,
-                self.assinante_id,
+                secret,
+                assinante_id,
                 timestamp
             ),
             "ts": timestamp
@@ -97,7 +98,7 @@ class StreamClient(Client):
             url='/stream/auth',
             payload=payload,
             headers={
-                "Authorization": self.authorization_token
+                "Authorization": authorization_token
             }
         )
         if response.status_code == 200:
@@ -107,13 +108,13 @@ class StreamClient(Client):
         else:
             raise AuthException("Erro nao esperado: %d" % response.status_code)
 
-    def _refresh_tokens(self):
+    def _refresh_tokens(self, refresh_token):
         response = super()._make_request(
             method='GET',
             url='/stream/auth/refresh',
             payload=None,
             headers={
-                "Authorization": self._tokens['refreshToken']
+                "Authorization": refresh_token
             }
         )
         if response.status_code == 200:
@@ -138,7 +139,7 @@ class StreamClient(Client):
             }
         )
         if response.status_code == 403:
-            self._tokens = self._refresh_tokens()
+            self._tokens = self._refresh_tokens(self._tokens['refreshToken'])
             response = super()._make_request(
                 method,
                 url,
@@ -154,5 +155,5 @@ class StreamClient(Client):
 
     def _make_request(self, method, url, payload, headers):
         if not self._tokens:
-            self._tokens = self._authenticate()
+            self._tokens = self._authenticate(self.authorization_token, self.secret, self.assinante_id)
         return self._make_authenticated_request(method, url, payload, headers)
