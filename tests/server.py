@@ -7,13 +7,15 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from .routes import routes
 import requests
 
-# https://gist.github.com/tliron/8e9757180506f25e46d9
-
-
 next_payload = None
 next_status_code = -1
 
 
+'''
+Based on the implementation of @tliron
+https://gist.github.com/tliron/8e9757180506f25e46d9
+
+'''
 class TestHTTPServer(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         self.routes = routes

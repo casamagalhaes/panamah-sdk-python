@@ -18,12 +18,12 @@ class TestClient(unittest.TestCase):
     def test_admin_client(self):
         """testing admin client"""
         client = AdminClient("auth")
-        #get
+        # get
         set_next_response(200, {'id': 1})
         response = client.get("/admin/assinantes")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(str(response.content, 'utf-8'), '{"id": 1}')
-        #post
+        # post
         set_next_response(201, {'id': 1})
         response = client.post("/admin/assinantes", {'id': 1})
         self.assertEqual(response.status_code, 201)
