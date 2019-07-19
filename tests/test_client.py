@@ -50,6 +50,10 @@ class TestClient(TestCase):
                 clear_next_response()
                 refresh_method.assert_called_once_with('refresh_12983123')
 
+    def test_stream_client_key_calculation(self):
+        """testing stream client key calc"""
+        client = StreamClient("auth", "secret")
+        self.assertEqual(client._calculate_key('123', '*', 1563551838), 'ZRx/dmsZhQzbm+zqIE/ML6Bq6uo=')
 
 if __name__ == '__main__':
     main()

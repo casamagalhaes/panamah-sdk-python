@@ -3,3 +3,6 @@ class AuthException(Exception):
 
 class RefreshException(Exception):
     pass
+
+class DataException(Exception):
+    pass

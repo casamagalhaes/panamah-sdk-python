@@ -2,12 +2,15 @@ from datetime import datetime, date
 from dateutil.parser import parse as parse_date
 
 
-class Model():
-    values = {}
+class Model():    
     schema = {}
+    def __init__(self, **kwargs):
+        self.values = {}
+        if kwargs is not None:
+            for key, value in kwargs.items():
+                setattr(self, key, value)
 
     def __getattr__(self, name):
-        # print('Getting attribute %s' % name)
         if name in self.schema:
             if name in self.values:
                 return self.values[name]
@@ -21,13 +24,15 @@ class Model():
             field = self.schema[name]
             self.values[name] = field.cast(
                 value) if hasattr(field, 'cast') else value
+        elif name == 'values':
+            super(Model, self).__setattr__(name, value)
         else:
             raise NameError("%s nao e uma propriedade do modelo" % name)
 
     def validate(self):
         for name, field in self.schema.items():
             try:
-                field.validate(self.__getattr__(name))
+                field.validate(getattr(self, name))
             except Exception as error:
                 raise type(error)('%s.%s -> %s' %
                                   (self.__class__.__name__, name, str(error)))
@@ -51,7 +56,7 @@ class StringField(Field):
 
     def validate(self, value):
         super().validate(value)
-        if (not self.allowedValues is None):
+        if self.allowedValues is not None:
             invalid_items = [
                 item for item in value if item not in self.allowedValues
             ]
@@ -119,7 +124,7 @@ class StringListField(Field):
 
     def validate(self, value):
         super().validate(value)
-        if (not self.allowedValues is None):
+        if self.allowedValues is not None:
             invalid_items = [
                 item for item in value if item not in self.allowedValues
             ]

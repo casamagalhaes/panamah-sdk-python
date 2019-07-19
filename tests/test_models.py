@@ -39,6 +39,10 @@ class TestClient(unittest.TestCase):
                 'h': ObjectListField(required=True, object_class=GrandChildModel),
             }
 
+        # Initialization
+        instance = ChildModel(a='1')
+        self.assertEqual(instance.a, '1')
+
         # Required
         instance = ChildModel()
         validate_then_expect(
@@ -113,3 +117,6 @@ class TestClient(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+x = TestClient()
+x.test_model()

@@ -82,7 +82,6 @@ class StreamClient(Client):
         self._tokens = None
 
     def _authenticate(self, authorization_token, secret, assinante_id):
-        print('\n\n===================++++> AUTH <++++=====================\n\n')
         timestamp = int(time.time())
         payload = {
             "assinanteId": assinante_id,
