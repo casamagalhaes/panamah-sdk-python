@@ -40,7 +40,3 @@ class PanamahStream():
 
     def __getattr__(self, name):
         return getattr(self.instance, name)
-
-
-stream = PanamahStream('auth', 'secret')
-time.sleep(10)
