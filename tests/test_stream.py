@@ -8,12 +8,13 @@ from .server import start as start_test_server, stop as stop_test_server, set_ne
 class TestStream(TestCase):
     def test_stream(self):
         class ChildModel(Model):
+            name='PRODUTO'
             schema = {
                 'a': StringField(required=True)
             }
 
         # should not accept non-model objects
-        stream = PanamahStream('auth', 'secret')
+        stream = PanamahStream('auth', 'secret', '123')
         try:
             stream.save(None)
         except Exception as e:

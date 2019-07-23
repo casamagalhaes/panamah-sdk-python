@@ -1,9 +1,11 @@
+import json
 from datetime import datetime, date
 from dateutil.parser import parse as parse_date
 
 
-class Model():    
+class Model():
     schema = {}
+
     def __init__(self, **kwargs):
         self.values = {}
         if kwargs is not None:
@@ -16,6 +18,8 @@ class Model():
                 return self.values[name]
             else:
                 return self.schema[name].default if hasattr(self.schema[name], 'default') else None
+        elif name in ['values', 'name']:
+            super(Model, self).__getattribute__(name)
         else:
             raise NameError("%s nao e uma propriedade do modelo" % name)
 
@@ -36,6 +40,21 @@ class Model():
             except Exception as error:
                 raise type(error)('%s.%s -> %s' %
                                   (self.__class__.__name__, name, str(error)))
+
+    def json(self, dumps=True):
+        result = {}
+        for key, value in self.values.items():
+            if isinstance(value, Model):
+                result[key] = value.json(dumps=False)
+            elif isinstance(value, list):
+                result[key] = [item.json(dumps=False) if isinstance(item, Model) else item for item in value]
+            else:
+                field = self.schema[key]
+                if hasattr(field, 'serialize_to_json'):
+                    result[key] = field.serialize_to_json(value)
+                else:
+                    result[key] = value
+        return json.dumps(result) if dumps else result
 
 
 class Field():
@@ -101,20 +120,9 @@ class DateField(Field):
             return value
         else:
             raise ValueError('data invalida')
-
-
-class ObjectField(Field):
-    def __init__(self, object_class=None, required=False, default=None):
-        self.object_class = object_class
-        super().__init__('object', required, default)
-
-    def validate(self, value):
-        super().validate(value)
-        if type(value) is self.object_class:
-            value.validate()
-        else:
-            raise ValueError(
-                'valor deve ser um modelo valido do tipo %s' % self.object_class.__name__)
+    
+    def serialize_to_json(self, value):
+        return value.isoformat()
 
 
 class StringListField(Field):
@@ -137,6 +145,21 @@ class StringListField(Field):
                 )
 
 
+class ObjectField(Field):
+    def __init__(self, object_class=None, required=False, default=None):
+        self.object_class = object_class
+        super().__init__('object', required, default)
+
+    def validate(self, value):
+        super().validate(value)
+        if value is not None:
+            if type(value) is self.object_class:
+                value.validate()
+            else:
+                raise ValueError(
+                    'valor deve ser um modelo valido do tipo %s' % self.object_class.__name__)
+
+
 class ObjectListField(Field):
     def __init__(self, object_class=None, required=False, default=None):
         self.object_class = object_class
@@ -144,15 +167,17 @@ class ObjectListField(Field):
 
     def validate(self, value):
         super().validate(value)
-        invalid_indexes = [
-            index for (index, item) in enumerate(value) if not type(item) is self.object_class
-        ]
-        if len(invalid_indexes) == 0:
-            for item in value:
-                item.validate()
-        else:
-            raise ValueError(
-                'objeto(s) no(s) indice(s) %s deve(m) ser modelo(s) valido(s) do tipo %s' % (
-                    ', '.join([str(index) for index in invalid_indexes]), self.object_class.__name__
+        if value is not None:
+            invalid_indexes = [
+                index for (index, item) in enumerate(value) if not type(item) is self.object_class
+            ]
+            if len(invalid_indexes) == 0:
+                for item in value:
+                    item.validate()
+            else:
+                raise ValueError(
+                    'objeto(s) no(s) indice(s) %s deve(m) ser modelo(s) valido(s) do tipo %s' % (
+                        ', '.join([str(index) for index in invalid_indexes]
+                                ), self.object_class.__name__
+                    )
                 )
-            )

@@ -112,15 +112,14 @@ class BatchProcessor(Thread):
         if self.multitenancy and assinanteId is None:
             raise ValueError('assinanteId e requerido no modo multitenancy')
         model.validate()
-        operation = Update.create_from_model(model, assinanteId)
+        operation = Update.from_model(model, assinanteId)
         self.current_batch.remove(operation).append(operation)
 
     def delete(self, model, assinanteId):
         if self.multitenancy and assinanteId is None:
             raise ValueError('assinanteId e requerido no modo multitenancy')
         if hasattr(model, 'id'):
-            self.current_batch.append(
-                Delete.create_from_model(model, assinanteId))
+            self.current_batch.append(Delete.from_model(model, assinanteId))
         else:
             raise ValueError('id obrigatorio para exclusao')
 

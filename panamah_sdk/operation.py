@@ -1,3 +1,4 @@
+import json
 from .models.base import Model
 
 
@@ -10,24 +11,40 @@ class Operation():
         self.assinanteId = assinanteId
 
     @classmethod
-    def create_from_model(cls, op, model, assinanteId):
-        data = model.json()
+    def from_model(cls, op, model, assinanteId):
+        data = model
         tipo = model.name
         id = model.id
         return Operation(data, tipo, op, assinanteId, id)
+
+    def json(self, dumps=True):
+        result = {
+            'data': self.data.json(dumps=False),
+            'tipo': self.tipo,
+            'op': self.op
+        }
+        if self.op == 'delete':
+            del result['data']
+            if hasattr(self.data, 'id'):
+                result['id'] = self.data.id
+            if self.id is not None:
+                result['id'] = self.id
+        if self.assinanteId is not None:
+            result['assinanteId'] = self.assinanteId
+        return json.dumps(result) if dumps else result
 
 class Update(Operation):
     def __init__(self, data, tipo, op, assinanteId, id):
         super().__init__(data, tipo, 'update', assinanteId, id)
 
     @classmethod
-    def create_from_model(cls, model, assinanteId):
-        return super().create_from_model('update', model, assinanteId)
+    def from_model(cls, model, assinanteId=None):
+        return super().from_model('update', model, assinanteId)
 
 class Delete(Operation):
     def __init__(self, data, tipo, op, assinanteId, id):
         super().__init__(data, tipo, 'delete', assinanteId, id)
 
     @classmethod
-    def create_from_model(cls, model, assinanteId):
-        return super().create_from_model('delete', model, assinanteId)
+    def from_model(cls, model, assinanteId=None):
+        return super().from_model('delete', model, assinanteId)

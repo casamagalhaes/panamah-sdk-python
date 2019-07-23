@@ -50,7 +50,7 @@ class Batch():
                     dst='%s/%s' % (destiny, self.filename))
 
     def json(self):
-        return json.dumps(self.operations)
+        return json.dumps([operation.json(dumps=False) for operation in self.operations])
 
     def read_operations(self, filename):
         content = self.read_content(filename)

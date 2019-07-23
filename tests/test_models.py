@@ -7,7 +7,7 @@ def validate_then_expect(self, instance, message):
     try:
         instance.validate()
     except Exception as e:
-        self.assertEqual(str(e), message)
+        self.assertEqual(str(e), message, "Message expected")
         pass
 
 
@@ -15,58 +15,74 @@ def validate_then_dont_expect(self, instance, message):
     try:
         instance.validate()
     except Exception as e:
-        self.assertNotEqual(str(e), message)
+        if message == '*':
+            raise 'Exception not expected'
+        self.assertNotEqual(str(e), message, "Message not expected")
         pass
 
 
+class GrandChildModel(Model):
+    schema = {
+        'z': StringField(required=True)
+    }
+
+
+class WrongChildModel(Model):
+    pass
+
+
+class ChildModel(Model):
+    schema = {
+        'i': StringField(required=False),
+        'j': ObjectField(required=False, object_class=GrandChildModel),
+        'l': ObjectListField(required=False, object_class=GrandChildModel)
+    }
+
+
+class ParentModel(Model):
+    schema = {
+        'a': StringField(required=True),
+        'b': StringField(required=True, allowedValues=['1', '2']),
+        'c': StringListField(required=True, allowedValues=['1', '2']),
+        'd': NumberField(required=True),
+        'e': BooleanField(required=True),
+        'f': DateField(required=True),
+        'g': ObjectField(required=True, object_class=ChildModel),
+        'h': ObjectListField(required=True, object_class=ChildModel),
+    }
+
+
 class TestClient(unittest.TestCase):
-    def test_model(self):
-        class WrongGrandChildModel(Model):
-            pass
 
-        class GrandChildModel(Model):
-            pass
-
-        class ChildModel(Model):
-            schema = {
-                'a': StringField(required=True),
-                'b': StringField(required=True, allowedValues=['1', '2']),
-                'c': StringListField(required=True, allowedValues=['1', '2']),
-                'd': NumberField(required=True),
-                'e': BooleanField(required=True),
-                'f': DateField(required=True),
-                'g': ObjectField(required=True, object_class=GrandChildModel),
-                'h': ObjectListField(required=True, object_class=GrandChildModel),
-            }
-
+    def test_field_validations(self):
         # Initialization
-        instance = ChildModel(a='1')
+        instance = ParentModel(a='1')
         self.assertEqual(instance.a, '1')
 
         # Required
-        instance = ChildModel()
+        instance = ParentModel()
         validate_then_expect(
-            self, instance, 'ChildModel.a -> propriedade obrigatoria')
+            self, instance, 'ParentModel.a -> propriedade obrigatoria')
         instance.a = 'valor preenchido'
         validate_then_dont_expect(
-            self, instance, 'ChildModel.a -> propriedade obrigatoria')
+            self, instance, 'ParentModel.a -> propriedade obrigatoria')
         self.assertEqual(instance.a, 'valor preenchido')
 
         # StringField with allowedValues
         instance.b = '3'
         validate_then_expect(
-            self, instance, 'ChildModel.b -> valor(es) "3" nao permitido(s). Somente 1, 2')
+            self, instance, 'ParentModel.b -> valor(es) "3" nao permitido(s). Somente 1, 2')
         instance.b = '1'
         validate_then_dont_expect(
-            self, instance, 'ChildModel.b -> valor(es) "3" nao permitido(s). Somente 1, 2')
+            self, instance, 'ParentModel.b -> valor(es) "3" nao permitido(s). Somente 1, 2')
 
         # StringListField
         instance.c = ['1', '2', '3']
         validate_then_expect(
-            self, instance, 'ChildModel.c -> valor(es) "3" nao permitido(s). Somente 1, 2')
+            self, instance, 'ParentModel.c -> valor(es) "3" nao permitido(s). Somente 1, 2')
         instance.c = ['1', '2']
         validate_then_dont_expect(
-            self, instance, 'ChildModel.c -> valor(es) "3" nao permitido(s). Somente 1, 2')
+            self, instance, 'ParentModel.c -> valor(es) "3" nao permitido(s). Somente 1, 2')
 
         # NumberField
         instance.d = '333'
@@ -99,24 +115,53 @@ class TestClient(unittest.TestCase):
         self.assertEqual(instance.f.second, 58)
 
         # ObjectField
-        instance.g = WrongGrandChildModel()
-        validate_then_expect(
-            self, instance, 'ChildModel.g -> valor deve ser um modelo valido do tipo GrandChildModel')
-        instance.g = GrandChildModel()
+        instance.g = ChildModel()
         validate_then_dont_expect(
-            self, instance, 'ChildModel.g -> valor deve ser um modelo valido do tipo GrandChildModel')
+            self, instance, 'ParentModel.g -> ChildModel.j -> valor deve ser um modelo valido do tipo GrandChildModel')
+        validate_then_dont_expect(
+            self, instance, 'ParentModel.g -> ChildModel.l -> \'NoneType\' object is not iterable')
+        instance.g = WrongChildModel()
+        validate_then_expect(
+            self, instance, 'ParentModel.g -> valor deve ser um modelo valido do tipo ChildModel')
+        instance.g = ChildModel()
+        validate_then_dont_expect(
+            self, instance, 'ParentModel.g -> valor deve ser um modelo valido do tipo ChildModel')
 
         # ObjectListField
-        instance.h = [WrongGrandChildModel(), GrandChildModel()]
+        instance.h = [WrongChildModel(), ChildModel()]
         validate_then_expect(
-            self, instance, 'ChildModel.h -> objeto(s) no(s) indice(s) 0 deve(m) ser modelo(s) valido(s) do tipo GrandChildModel')
-        instance.h = [GrandChildModel()]
+            self, instance, 'ParentModel.h -> objeto(s) no(s) indice(s) 0 deve(m) ser modelo(s) valido(s) do tipo ChildModel')
+        instance.h = [ChildModel()]
         validate_then_dont_expect(
-            self, instance, 'ChildModel.h -> objeto(s) no(s) indice(s) 0 deve(m) ser modelo(s) valido(s) do tipo GrandChildModel')
+            self, instance, 'ParentModel.h -> objeto(s) no(s) indice(s) 0 deve(m) ser modelo(s) valido(s) do tipo ChildModel')
+
+    def test_serialization(self):
+        instance = ParentModel(
+            a='1',
+            b='2',
+            c=['1', '2'],
+            d=100,
+            e=True,
+            f=1546559998,
+            g=ChildModel(
+                i='foo',
+                j=GrandChildModel(z='bar'),
+                l=[GrandChildModel(z='foz')]
+            ),
+            h=[
+                ChildModel(i='baz'),
+                ChildModel(
+                    i='fox',
+                    j=GrandChildModel(z='bax'),
+                    l=[
+                        GrandChildModel(z='xof')
+                    ]
+                )
+            ]
+        )
+
+        self.assertEqual(instance.json(), '{"a": "1", "b": "2", "c": ["1", "2"], "d": 100, "e": true, "f": "2019-01-03T23:59:58", "g": {"i": "foo", "j": {"z": "bar"}, "l": [{"z": "foz"}]}, "h": [{"i": "baz"}, {"i": "fox", "j": {"z": "bax"}, "l": [{"z": "xof"}]}]}')
 
 
 if __name__ == '__main__':
     unittest.main()
-
-x = TestClient()
-x.test_model()
