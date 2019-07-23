@@ -2,6 +2,7 @@ from .base import Model, StringField, NumberField, BooleanField, DateField, Obje
 
 
 class PanamahAssinante(Model):
+    name='ASSINANTE'
     schema = {
         'id': StringField(required=True),
         'nome': StringField(required=True),
@@ -19,6 +20,7 @@ class PanamahAssinante(Model):
 
 
 class PanamahRevenda(Model):
+    name='REVENDA'
     schema = {
         'id': StringField(required=True),
         'nome': StringField(required=True),
@@ -31,6 +33,7 @@ class PanamahRevenda(Model):
 
 
 class PanamahSecao(Model):
+    name='SECAO'
     schema = {
         'id': StringField(required=True),
         'codigo': StringField(required=True),
@@ -39,6 +42,7 @@ class PanamahSecao(Model):
 
 
 class PanamahGrupo(Model):
+    name='GRUPO'
     schema = {
         'id': StringField(required=True),
         'codigo': StringField(required=True),
@@ -48,6 +52,7 @@ class PanamahGrupo(Model):
 
 
 class PanamahSubgrupo(Model):
+    name='SUBGRUPO'
     schema = {
         'id': StringField(required=True),
         'codigo': StringField(required=True),
@@ -58,6 +63,7 @@ class PanamahSubgrupo(Model):
 
 
 class PanamahHolding(Model):
+    name='HOLDING'
     schema = {
         'id': StringField(required=True),
         'descricao': StringField(required=True)
@@ -65,6 +71,7 @@ class PanamahHolding(Model):
 
 
 class PanamahLoja(Model):
+    name='LOJA'
     schema = {
         'ativa': BooleanField(required=True),
         'id': StringField(required=True),
@@ -89,6 +96,7 @@ class PanamahLoja(Model):
 
 
 class PanamahMeta(Model):
+    name='META'
     schema = {
         'id': StringField(required=True),
         'mes': NumberField(required=True),
@@ -100,6 +108,7 @@ class PanamahMeta(Model):
 
 
 class PanamahFormaPagamento(Model):
+    name='FORMA_PAGAMENTO'
     schema = {
         'id': StringField(required=True),
         'descricao': StringField(required=True)
@@ -107,6 +116,7 @@ class PanamahFormaPagamento(Model):
 
 
 class PanamahFuncionario(Model):
+    name='FUNCIONARIO'
     schema = {
         'data_nascimento': DateField(required=False),
         'id': StringField(required=True),
@@ -120,6 +130,7 @@ class PanamahFuncionario(Model):
 
 
 class PanamahAcesso(Model):
+    name='ACESSO'
     schema = {
         'id': StringField(required=True),
         'funcionario_ids': StringListField(required=True)
@@ -127,6 +138,7 @@ class PanamahAcesso(Model):
 
 
 class PanamahCliente(Model):
+    name='CLIENTE'
     schema = {
         'id': StringField(required=True),
         'nome': StringField(required=True),
@@ -139,6 +151,7 @@ class PanamahCliente(Model):
 
 
 class PanamahFornecedor(Model):
+    name='FORNECEDOR'
     schema = {
         'id': StringField(required=True),
         'nome': StringField(required=True),
@@ -172,6 +185,7 @@ class PanamahProdutoComposicao(Model):
 
 
 class PanamahProduto(Model):
+    name='PRODUTO'
     schema = {
         'composicao': ObjectField(required=False, object_class=PanamahProdutoComposicao),
         'tipo_composicao': StringField(required=False),
@@ -190,6 +204,7 @@ class PanamahProduto(Model):
 
 
 class PanamahEan(Model):
+    name='EAN'
     schema = {
         'id': StringField(required=True),
         'produto_id': StringField(required=True),
@@ -198,6 +213,7 @@ class PanamahEan(Model):
 
 
 class PanamahTrocaFormaPagamento(Model):
+    name='TROCA_FORMA_PAGAMENTO'
     schema = {
         'autorizador_id': StringField(required=False),
         'data': DateField(required=True),
@@ -225,6 +241,7 @@ class PanamahTrocaDevolucaoItem(Model):
 
 
 class PanamahTrocaDevolucao(Model):
+    name='TROCA_DEVOLUCAO'
     schema = {
         'autorizador_id': StringField(required=False),
         'data': DateField(required=True),
@@ -248,6 +265,7 @@ class PanamahEventoCaixaValoresDeclarados(Model):
 
 
 class PanamahEventoCaixa(Model):
+    name='EVENTO_CAIXA'
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True),
@@ -289,6 +307,7 @@ class PanamahVendaItem(Model):
 
 
 class PanamahVenda(Model):
+    name='VENDA'
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True),
@@ -327,6 +346,7 @@ class PanamahCompraItem(Model):
 
 
 class PanamahCompra(Model):
+    name='COMPRA'
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True),
@@ -346,6 +366,7 @@ class PanamahCompra(Model):
 
 
 class PanamahLocalEstoque(Model):
+    name='LOCAL_ESTOQUE'
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True),
@@ -355,6 +376,7 @@ class PanamahLocalEstoque(Model):
 
 
 class PanamahEstoqueMovimentacao(Model):
+    name='ESTOQUE_MOVIMENTACAO'
     schema = {
         'id': StringField(required=True),
         'local_estoque_id': StringField(required=True),
@@ -375,6 +397,7 @@ class PanamahTituloPagarPagamento(Model):
 
 
 class PanamahTituloPagar(Model):
+    name='TITULO_PAGAR'
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True),
@@ -399,6 +422,7 @@ class PanamahTituloReceberPagamento(Model):
 
 
 class PanamahTituloReceber(Model):
+    name='TITULO_RECEBER'
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True),
