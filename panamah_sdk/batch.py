@@ -43,7 +43,7 @@ class Batch():
 
     def save(self, directory, filename=None):
         with open('%s/%s' % (directory, filename if filename is not None else self.filename), mode='w') as fp:
-            return fp.write(json.dumps(self.operations))
+            return fp.write(self.json())
 
     def move(self, source, destiny):
         shutil.move(src='%s/%s' % (source, self.filename),
@@ -72,12 +72,16 @@ class Batch():
         return self
 
     def remove(self, operation):
-        self.operations.remove(operation)
+        if operation in self.operations:
+            self.operations.remove(operation)
         return self
+
+    def get_filename_by_created_date(self):
+        return self.created_at.strftime(FILENAME_FORMAT)
 
     def reset(self):
         self.created_at = datetime.now()
-        self.filename = self.created_at.strftime(FILENAME_FORMAT)
+        self.filename = self.get_filename_by_created_date()
         self.operations = []
 
     def hash(self):

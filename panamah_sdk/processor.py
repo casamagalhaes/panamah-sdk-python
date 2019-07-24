@@ -18,18 +18,22 @@ BATCH_MAX_AGE = 5 * 60
 
 
 class BatchProcessor(Thread):
-    def __init__(self, authorization_token, secret, assinante_id):
+    def __init__(self, authorization_token, secret, assinante_id, batch_max_length=BATCH_MAX_LENGTH, batch_max_size=BATCH_MAX_SIZE, batch_max_age=BATCH_MAX_AGE):
         Thread.__init__(self, daemon=True)
         self.initialize_structure()
         self.multitenancy = assinante_id == '*'
         self.client = StreamClient(authorization_token, secret, assinante_id)
-        self.current_batch = Batch(filename='%s/%s' % (ROOT_PATH, 'current.pbt'), force_existence=True)
+        self.current_batch = Batch(
+            filename='%s/%s' % (ROOT_PATH, 'current.pbt'), force_existence=True)
         self.last_batch_hash = None
+        self.batch_max_length = batch_max_length
+        self.batch_max_size = batch_max_size
+        self.batch_max_age = batch_max_age
 
     def run(self):
         while True:
             self.initialize_structure()
-            self.keep_processing()
+            self.process()
 
     def initialize_structure(self):
         if not os.path.exists(ACCUMULATED_PATH):
@@ -37,7 +41,7 @@ class BatchProcessor(Thread):
         if not os.path.exists(SENT_PATH):
             os.makedirs(SENT_PATH)
 
-    def keep_processing(self):
+    def process(self):
         if self.accumulated_batch_exists():
             self.send_accumulated_batches()
         self.watch_current_batch()
@@ -77,19 +81,19 @@ class BatchProcessor(Thread):
 
     def current_batch_expired(self):
         def expired_by_count():
-            return self.current_batch.length >= BATCH_MAX_LENGTH
+            return self.current_batch.length >= self.batch_max_length
 
         def expired_by_size():
-            return self.current_batch.size >= BATCH_MAX_SIZE
+            return self.current_batch.size >= self.batch_max_size
 
         def expired_by_time():
-            return self.current_batch.age >= BATCH_MAX_AGE
+            return self.current_batch.age >= self.batch_max_age
 
         return expired_by_count() or expired_by_size() or expired_by_time()
 
     def accumulate_current_batch(self):
         if self.current_batch.length > 0:
-            self.current_batch.save(directory=ACCUMULATED_PATH)
+            self.current_batch.save(directory=ACCUMULATED_PATH, filename=self.current_batch.get_filename_by_created_date())
             self.current_batch.reset()
 
     def write_changes_to_current_batch(self):
@@ -108,14 +112,14 @@ class BatchProcessor(Thread):
     def recover_from_failures(self, batch, failures):
         return NotImplementedError
 
-    def save(self, model, assinanteId):
+    def save(self, model, assinanteId=None):
         if self.multitenancy and assinanteId is None:
             raise ValueError('assinanteId e requerido no modo multitenancy')
         model.validate()
         operation = Update.from_model(model, assinanteId)
         self.current_batch.remove(operation).append(operation)
 
-    def delete(self, model, assinanteId):
+    def delete(self, model, assinanteId=None):
         if self.multitenancy and assinanteId is None:
             raise ValueError('assinanteId e requerido no modo multitenancy')
         if hasattr(model, 'id'):

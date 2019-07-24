@@ -1,4 +1,5 @@
 import time
+import atexit
 from .models.base import Model
 from .processor import BatchProcessor
 
@@ -13,6 +14,10 @@ class PanamahStream():
                 authorization_token, secret, assinante_id)
             self.processor.start()
 
+            def flush():
+                self.processor.flush()
+            atexit.register(flush)
+
         def is_acceptable_model(self, model):
             return hasattr(model, 'name') and model.name != 'ASSINANTE'
 
@@ -23,7 +28,7 @@ class PanamahStream():
                 raise ValueError('model deve ser um modelo valido do Panamah')
 
         def delete(self, model, assinanteId=None):
-            if isinstance(model, Model)  and self.is_acceptable_model(model):
+            if isinstance(model, Model) and self.is_acceptable_model(model):
                 self.processor.delete(model, assinanteId)
             else:
                 raise ValueError('model deve ser um modelo valido do Panamah')

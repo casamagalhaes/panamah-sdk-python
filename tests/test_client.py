@@ -32,7 +32,7 @@ class TestClient(TestCase):
     def test_stream_client(self):
         """testing stream client"""
         client = StreamClient("auth", "secret")
-        with mock.patch.object(client, '_authenticate') as authenticate_method:
+        with mock.patch.object(client, 'authenticate') as authenticate_method:
             authenticate_method.return_value = {
                 'accessToken': '123',
                 'refreshToken': 'refresh_12983123',
@@ -40,7 +40,7 @@ class TestClient(TestCase):
             response = client.post("/stream/data", {"s": 1})
             authenticate_method.assert_called_once_with('auth', 'secret', '*')
             self.assertEqual(response.status_code, 200)
-            with mock.patch.object(client, '_refresh_tokens') as refresh_method:
+            with mock.patch.object(client, 'refresh_tokens') as refresh_method:
                 refresh_method.return_value = {
                     'accessToken': 'a501925913',
                     'refreshToken': 'b284422321',
@@ -53,7 +53,7 @@ class TestClient(TestCase):
     def test_stream_client_key_calculation(self):
         """testing stream client key calc"""
         client = StreamClient("auth", "secret")
-        self.assertEqual(client._calculate_key('123', '*', 1563551838), 'ZRx/dmsZhQzbm+zqIE/ML6Bq6uo=')
+        self.assertEqual(client.calculate_key('123', '*', 1563551838), 'ZRx/dmsZhQzbm+zqIE/ML6Bq6uo=')
 
 if __name__ == '__main__':
     main()

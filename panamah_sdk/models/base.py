@@ -47,7 +47,8 @@ class Model():
             if isinstance(value, Model):
                 result[key] = value.json(dumps=False)
             elif isinstance(value, list):
-                result[key] = [item.json(dumps=False) if isinstance(item, Model) else item for item in value]
+                result[key] = [item.json(dumps=False) if isinstance(
+                    item, Model) else item for item in value]
             else:
                 field = self.schema[key]
                 if hasattr(field, 'serialize_to_json'):
@@ -120,7 +121,7 @@ class DateField(Field):
             return value
         else:
             raise ValueError('data invalida')
-    
+
     def serialize_to_json(self, value):
         return value.isoformat()
 
@@ -178,6 +179,6 @@ class ObjectListField(Field):
                 raise ValueError(
                     'objeto(s) no(s) indice(s) %s deve(m) ser modelo(s) valido(s) do tipo %s' % (
                         ', '.join([str(index) for index in invalid_indexes]
-                                ), self.object_class.__name__
+                                  ), self.object_class.__name__
                     )
                 )

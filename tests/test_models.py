@@ -160,7 +160,10 @@ class TestClient(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(instance.json(), '{"a": "1", "b": "2", "c": ["1", "2"], "d": 100, "e": true, "f": "2019-01-03T23:59:58", "g": {"i": "foo", "j": {"z": "bar"}, "l": [{"z": "foz"}]}, "h": [{"i": "baz"}, {"i": "fox", "j": {"z": "bax"}, "l": [{"z": "xof"}]}]}')
+        self.assertEqual(
+            instance.json(),
+            '{"a": "1", "b": "2", "c": ["1", "2"], "d": 100, "e": true, "f": "2019-01-03T23:59:58", "g": {"i": "foo", "j": {"z": "bar"}, "l": [{"z": "foz"}]}, "h": [{"i": "baz"}, {"i": "fox", "j": {"z": "bax"}, "l": [{"z": "xof"}]}]}'
+        )
 
 
 if __name__ == '__main__':
