@@ -93,7 +93,8 @@ class BatchProcessor(Thread):
 
     def accumulate_current_batch(self):
         if self.current_batch.length > 0:
-            self.current_batch.save(directory=ACCUMULATED_PATH, filename=self.current_batch.get_filename_by_created_date())
+            self.current_batch.save(
+                directory=ACCUMULATED_PATH, filename=self.current_batch.get_filename_by_created_date())
             self.current_batch.reset()
 
     def write_changes_to_current_batch(self):
@@ -110,7 +111,14 @@ class BatchProcessor(Thread):
                 for file in os.listdir(ACCUMULATED_PATH) if file.endswith('.pbt')]
 
     def recover_from_failures(self, batch, failures):
-        return NotImplementedError
+        if failures['falhas']['total'] > 0:
+            failed_ids = [Operation.from_json(item).id for item in failures['falhas']['itens']]
+            failed_operations = [Operation.from_json(operation) for operation in batch.operations
+                                 if next((failed_id for failed_id in failed_ids
+                                          if failed_id == Operation.from_json(operation).id
+                                          ), False)]
+            prioritized_batch = Batch(operations=failed_operations, high_priority=True)
+            prioritized_batch.save(directory=ACCUMULATED_PATH)
 
     def save(self, model, assinanteId=None):
         if self.multitenancy and assinanteId is None:
@@ -126,6 +134,32 @@ class BatchProcessor(Thread):
             self.current_batch.append(Delete.from_model(model, assinanteId))
         else:
             raise ValueError('id obrigatorio para exclusao')
+
+    def request_pending_resources(self, start=0, count=100, concat=None):
+        result = concat if concat is not None else {}
+        response = self.client.get(
+            '/stream/pending-resources?start=%d&count=%d' % (start, count))
+        if response.status_code == 200:
+            data = response.json()
+            if len(data) > 0:
+                for assinanteId, value in data.items():
+                    for modelName, ids in value.items():
+                        if assinanteId not in result:
+                            result[assinanteId] = {}
+                        if modelName not in result[assinanteId]:
+                            result[assinanteId][modelName] = []
+                        result[assinanteId][modelName] = result[assinanteId][modelName] + ids
+        else:
+            raise DataException('Erro ao buscar recursos pendentes.')
+        return result
+
+    def get_pending_resources(self):
+        start = 0
+        count = 100
+        data = self.request_pending_resources()
+        while len(data) > 0:
+            data = self.request_pending_resources(start + count, count, data)
+        return data
 
     def flush(self):
         self.accumulate_current_batch()

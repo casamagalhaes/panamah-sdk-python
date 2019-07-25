@@ -17,9 +17,18 @@ class Operation():
         id = model.id
         return Operation(data, tipo, op, assinanteId, id)
 
+    @classmethod
+    def from_json(cls, json):
+        data = json['data']
+        tipo = json['tipo']
+        id = data['id'] if 'id' in data else json['id']
+        op = json['op']
+        assinanteId = data['assinanteId'] if 'assinanteId' in json else None
+        return Operation(data, tipo, op, assinanteId, id)
+
     def json(self, dumps=True):
         result = {
-            'data': self.data.json(dumps=False),
+            'data': self.data.json(dumps=False) if isinstance(self.data, Model) else self.data,
             'tipo': self.tipo,
             'op': self.op
         }

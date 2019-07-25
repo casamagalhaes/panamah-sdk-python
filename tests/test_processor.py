@@ -2,10 +2,21 @@ import os
 import shutil
 from time import sleep
 from unittest import main, mock, TestCase
+from panamah_sdk.batch import Batch
+from panamah_sdk.operation import Update
 from panamah_sdk.processor import BatchProcessor, BATCH_MAX_LENGTH, BATCH_MAX_SIZE, BATCH_MAX_AGE, ROOT_PATH, ACCUMULATED_PATH, SENT_PATH
 from panamah_sdk.models.base import Model, StringField
 from panamah_sdk.models.definitions import PanamahHolding, PanamahAcesso, PanamahSecao
 from .server import start as start_test_server, stop as stop_test_server, set_next_response, clear_next_response, get_last_request
+
+
+class Response():
+    def __init__(self, status_code, json_response):
+        self.status_code = status_code
+        self.json_response = json_response
+
+    def json(self):
+        return self.json_response
 
 
 def test_expiration(self, by_max_length=False, by_max_size=False, by_max_age=False):
@@ -194,6 +205,87 @@ class TestStream(TestCase):
             self.assertEqual(request['payload'], expected_payload)
         finally:
             stop_test_server()
+
+    def test_requesting_pending_resources(self):
+        b = BatchProcessor('auth', 'secret', '12345')
+
+        with mock.patch.object(b.client, 'get') as get_method:
+            get_method.return_value = Response(200, {
+                "00934509022": {
+                    "HOLDING": [
+                        "07128945000132"
+                    ],
+                    "LOJA": [
+                        "111"
+                    ],
+                    "PRODUTO": [
+                        "1"
+                    ],
+                    "SECAO": [
+                        "xxxx"
+                    ]
+                },
+                "02541926375": {
+                    "LOJA": [
+                        "111",
+                        "2345"
+                    ],
+                    "PRODUTO": [
+                        "1"
+                    ],
+                    "SECAO": [
+                        "xxxx"
+                    ]
+                }
+            })
+
+            page = b.request_pending_resources()
+
+            self.assertDictEqual(page, {'00934509022': {'HOLDING': ['07128945000132'], 'LOJA': ['111'], 'PRODUTO': [
+                                 '1'], 'SECAO': ['xxxx']}, '02541926375': {'LOJA': ['111', '2345'], 'PRODUTO': ['1'], 'SECAO': ['xxxx']}})
+
+            get_method.return_value = Response(200, {
+                "00934509022": {
+                    "SECAO": [
+                        "zzzz"
+                    ]
+                },
+                "02541926375": {
+                    "LOJA": [
+                        "3333"
+                    ],
+                    "PRODUTO": [
+                        "2"
+                    ]
+                }
+            })
+
+            page2 = b.request_pending_resources(concat=page)
+
+            self.assertDictEqual(page2, {'00934509022': {'HOLDING': ['07128945000132'], 'LOJA': ['111'], 'PRODUTO': ['1'], 'SECAO': [
+                                 'xxxx', 'zzzz']}, '02541926375': {'LOJA': ['111', '2345', '3333'], 'PRODUTO': ['1', '2'], 'SECAO': ['xxxx']}})
+
+    def test_recover_failures(self):
+        processor = BatchProcessor(
+            'auth', 'secret', '12345', batch_max_length=1
+        )
+
+        holding = PanamahHolding(id='1234', descricao='teste')
+        batch = Batch()
+        batch_filename = batch.filename
+        batch.append(Update.from_model(holding))
+        batch.save(directory=ACCUMULATED_PATH)
+
+        loaded_batch = Batch(filename='%s/%s' % (ACCUMULATED_PATH, batch_filename))
+        mock_response = {
+            'falhas': {
+                'total': 1,
+                'itens': loaded_batch.operations
+            }
+        }
+        processor.recover_from_failures(loaded_batch, mock_response)
+        self.assertTrue(bool(next((file for file in os.listdir(
+            ACCUMULATED_PATH) if file.startswith('0_')), False)))
 
 
 if __name__ == '__main__':

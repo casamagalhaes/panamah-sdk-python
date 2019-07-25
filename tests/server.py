@@ -9,6 +9,7 @@ import requests
 
 next_payload = None
 next_status_code = -1
+next_path_regex = None
 last_request = None
 
 
@@ -54,18 +55,22 @@ class TestHTTPServer(BaseHTTPRequestHandler):
     def check_for_next_response(self):
         global next_status_code
         global next_payload
+        global next_path_regex
         global last_request
 
         if self.path == '/set-response':
             payload = self.get_payload()
             next_status_code = payload['status_code']
             next_payload = payload['payload']
+            next_path_regex = re.compile(
+                payload['path_regex']) if 'path_regex' in payload else None
             self.send_response(200)
             self.end_headers()
             return True
         elif self.path == '/clear-response':
             next_status_code = -1
             next_payload = None
+            next_path_regex = None
             self.send_response(200)
             self.end_headers()
             return True
@@ -80,6 +85,7 @@ class TestHTTPServer(BaseHTTPRequestHandler):
         global next_status_code
         global next_payload
         global last_request
+        global next_path_regex
 
         if self.check_for_next_response():
             return
@@ -88,9 +94,9 @@ class TestHTTPServer(BaseHTTPRequestHandler):
             'method': method,
             'path': self.path,
             'payload': self.get_payload() if self.headers['content-length'] and int(self.headers['content-length']) > 0 else None
-        }        
+        }
 
-        if (next_status_code > -1) and (not next_payload is None):
+        if (next_status_code > -1) and (not next_payload is None) and ((next_path_regex is None) or next_path_regex.search(self.path)):
             self.send_response(next_status_code)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -168,12 +174,14 @@ def start_server():
         pass
     httpd.server_close()
 
-
-def set_next_response(status_code, payload):
+def set_next_response(status_code, payload, path_regex=None):
+    request = {'status_code': status_code, 'payload': payload}
+    if path_regex is not None:
+        request['path_regex'] = path_regex
     try:
         response = requests.post(
             url='http://%s:%d/set-response' % server_address,
-            json={'status_code': status_code, 'payload': payload}
+            json=request
         )
         return response.status_code == 200
     except:

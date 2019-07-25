@@ -6,7 +6,7 @@ from .server import start as start_test_server, stop as stop_test_server, set_ne
 
 
 class TestStream(TestCase):
-    def test_stream(self):
+    def test_initialization_and_operations(self):
         class ChildModel(Model):
             name='PRODUTO'
             schema = {
@@ -42,7 +42,6 @@ class TestStream(TestCase):
             stream.delete(model)
         except Exception as e:
             self.assertEqual(str(e), 'ChildModel.id -> propriedade obrigatoria')
-
 
 if __name__ == '__main__':
     main()

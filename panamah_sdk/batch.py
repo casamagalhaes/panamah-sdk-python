@@ -10,7 +10,8 @@ FILENAME_FORMAT = '%Y_%m_%d_%H_%M_%S_%f.pbt'
 
 
 class Batch():
-    def __init__(self, filename=None, force_existence=False):
+    def __init__(self, filename=None, force_existence=False, operations=None, high_priority=False):
+        self.high_priority = high_priority
         self.filename = filename
         if filename is not None:
             if force_existence:
@@ -21,6 +22,8 @@ class Batch():
             self.operations = self.read_operations(filename)
         else:
             self.reset()
+        if operations is not None:
+            self.operations = operations
 
     @property
     def size(self):
@@ -40,7 +43,7 @@ class Batch():
                 fp.write('[]')
 
     def save(self, directory, filename=None):
-        with open('%s/%s' % (directory, filename if filename is not None else self.filename), mode='w') as fp:
+        with open('%s/%s' % (directory, filename if filename is not None else self.filename), mode='w+') as fp:
             return fp.write(self.json())
 
     def move(self, source, destiny):
@@ -84,7 +87,10 @@ class Batch():
         return self
 
     def get_filename_by_created_date(self):
-        return self.created_at.strftime(FILENAME_FORMAT)
+        filename = self.created_at.strftime(FILENAME_FORMAT)
+        if self.high_priority:
+            filename = '0_' + filename
+        return filename
 
     def reset(self):
         self.created_at = datetime.now()
