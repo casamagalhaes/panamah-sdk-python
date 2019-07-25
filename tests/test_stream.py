@@ -10,10 +10,10 @@ class TestStream(TestCase):
         class ChildModel(Model):
             name='PRODUTO'
             schema = {
-                'a': StringField(required=True)
+                'id': StringField(required=True)
             }
 
-        # should not accept non-model objects
+        # should not accept non-model objects on save
         stream = PanamahStream('auth', 'secret', '123')
         try:
             stream.save(None)
@@ -21,12 +21,27 @@ class TestStream(TestCase):
             self.assertEqual(
                 str(e), 'model deve ser um modelo valido do Panamah')
 
-        # should validate models
+        # should not accept non-model objects on delete
+        stream = PanamahStream('auth', 'secret', '123')
+        try:
+            stream.delete(None)
+        except Exception as e:
+            self.assertEqual(
+                str(e), 'model deve ser um modelo valido do Panamah')
+
+        # should validate models on save
         try:
             model = ChildModel()
             stream.save(model)
         except Exception as e:
-            self.assertEqual(str(e), 'ChildModel.a -> propriedade obrigatoria')
+            self.assertEqual(str(e), 'ChildModel.id -> propriedade obrigatoria')
+
+        # should validate models on delete
+        try:
+            model = ChildModel()
+            stream.delete(model)
+        except Exception as e:
+            self.assertEqual(str(e), 'ChildModel.id -> propriedade obrigatoria')
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ import requests
 
 next_payload = None
 next_status_code = -1
+last_request = None
 
 
 '''
@@ -16,6 +17,8 @@ Based on the implementation of @tliron
 https://gist.github.com/tliron/8e9757180506f25e46d9
 
 '''
+
+
 class TestHTTPServer(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         self.routes = routes
@@ -45,13 +48,14 @@ class TestHTTPServer(BaseHTTPRequestHandler):
     def get_payload(self):
         payload_len = int(self.headers['content-length'])
         payload = self.rfile.read(payload_len)
-        print(payload)
         payload = json.loads(payload)
         return payload
 
     def check_for_next_response(self):
         global next_status_code
         global next_payload
+        global last_request
+
         if self.path == '/set-response':
             payload = self.get_payload()
             next_status_code = payload['status_code']
@@ -65,14 +69,28 @@ class TestHTTPServer(BaseHTTPRequestHandler):
             self.send_response(200)
             self.end_headers()
             return True
+        elif self.path == '/last-request':
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(bytes(json.dumps(last_request), 'utf-8'))
+            return True
         return False
 
     def handle_method(self, method):
         global next_status_code
         global next_payload
+        global last_request
+
         if self.check_for_next_response():
             return
-        elif (next_status_code > -1) and (not next_payload is None):
+
+        last_request = {
+            'method': method,
+            'path': self.path,
+            'payload': self.get_payload() if self.headers['content-length'] and int(self.headers['content-length']) > 0 else None
+        }        
+
+        if (next_status_code > -1) and (not next_payload is None):
             self.send_response(next_status_code)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -168,6 +186,16 @@ def clear_next_response():
             url='http://%s:%d/clear-response' % server_address
         )
         return response.status_code == 200
+    except:
+        pass
+
+
+def get_last_request():
+    try:
+        response = requests.get(
+            url='http://%s:%d/last-request' % server_address
+        )
+        return response.json()
     except:
         pass
 

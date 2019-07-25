@@ -4,6 +4,7 @@ import os
 import shutil
 import json
 from datetime import datetime
+from .operation import Operation
 
 FILENAME_FORMAT = '%Y_%m_%d_%H_%M_%S_%f.pbt'
 
@@ -29,7 +30,7 @@ class Batch():
     def length(self):
         return len(self.operations)
 
-    @property 
+    @property
     def age(self):
         return (datetime.now() - self.created_at).total_seconds()
 
@@ -46,11 +47,13 @@ class Batch():
             return fp.write(self.json())
 
     def move(self, source, destiny):
-        shutil.move(src='%s/%s' % (source, self.filename),
-                    dst='%s/%s' % (destiny, self.filename))
+        source_filename = '%s/%s' % (source, self.filename)
+        destiny_filename = '%s/%s' % (destiny, self.filename)
+        if os.path.exists(source_filename):
+            shutil.move(src=source_filename, dst=destiny_filename)
 
     def json(self):
-        return json.dumps([operation.json(dumps=False) for operation in self.operations])
+        return json.dumps([operation.json(dumps=False) if isinstance(operation, Operation) else operation for operation in self.operations])
 
     def read_operations(self, filename):
         content = self.read_content(filename)
@@ -72,8 +75,15 @@ class Batch():
         return self
 
     def remove(self, operation):
-        if operation in self.operations:
-            self.operations.remove(operation)
+        found = list(filter(lambda batchOperation:            
+            batchOperation.id == operation.id and
+            batchOperation.assinanteId == operation.assinanteId and
+            batchOperation.tipo == operation.tipo and
+            batchOperation.op == operation.op,
+            self.operations
+        ))
+        if len(found) > 0:
+            self.operations.remove(found[0])
         return self
 
     def get_filename_by_created_date(self):

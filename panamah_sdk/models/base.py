@@ -57,6 +57,24 @@ class Model():
                     result[key] = value
         return json.dumps(result) if dumps else result
 
+    @classmethod
+    def from_json(cls, json):
+        result = cls()
+        for key, value in json.items():
+            if key in cls.schema:
+                field = cls.schema[key]
+
+                def deserialize(field, value):
+                    if hasattr(field, 'deserialize_from_json'):
+                        return field.deserialize_from_json(value)
+                    else:
+                        return value
+                if isinstance(value, list):
+                    setattr(result, key, [deserialize(field, item) if isinstance(item, object) else item for item in value])
+                else:
+                    setattr(result, key, deserialize(field, value))
+        return result
+
 
 class Field():
     def __init__(self, type='unknown', required=False, default=None):
@@ -125,6 +143,9 @@ class DateField(Field):
     def serialize_to_json(self, value):
         return value.isoformat()
 
+    def deserialize_from_json(self, value):
+        return self.cast(value)
+
 
 class StringListField(Field):
     def __init__(self, allowedValues=None, required=False, default=None):
@@ -159,6 +180,9 @@ class ObjectField(Field):
             else:
                 raise ValueError(
                     'valor deve ser um modelo valido do tipo %s' % self.object_class.__name__)
+
+    def deserialize_from_json(self, value):
+        return self.object_class.from_json(value)
 
 
 class ObjectListField(Field):

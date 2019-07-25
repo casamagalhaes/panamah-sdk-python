@@ -2,7 +2,7 @@ import requests
 import time
 import base64
 import hashlib
-from .exceptions import *
+from .exceptions import AuthException, RefreshException
 
 GLOBAL_BASE_URL = "http://127.0.0.1:2020"  # "https://panamah.io/api/v2"
 GLOBAL_SDK_IDENTITY = "panamah-python1.0.0"
@@ -14,7 +14,6 @@ class Client():
     def make_request(self, method, url, payload, headers):
         path = '/' + url if not url.startswith('/') else url
         url_with_path = GLOBAL_BASE_URL + path
-        print("%s %s" % (method, url_with_path))
         response = requests.request(
             method=method,
             url=url_with_path,
@@ -154,5 +153,6 @@ class StreamClient(Client):
 
     def make_request(self, method, url, payload, headers):
         if not self._tokens:
-            self._tokens = self.authenticate(self.authorization_token, self.secret, self.assinante_id)
+            self._tokens = self.authenticate(
+                self.authorization_token, self.secret, self.assinante_id)
         return self.make_authenticated_request(method, url, payload, headers)

@@ -5,7 +5,7 @@ from unittest import main, mock, TestCase
 from panamah_sdk.processor import BatchProcessor, BATCH_MAX_LENGTH, BATCH_MAX_SIZE, BATCH_MAX_AGE, ROOT_PATH, ACCUMULATED_PATH, SENT_PATH
 from panamah_sdk.models.base import Model, StringField
 from panamah_sdk.models.definitions import PanamahHolding, PanamahAcesso, PanamahSecao
-from .server import start as start_test_server, stop as stop_test_server, set_next_response, clear_next_response
+from .server import start as start_test_server, stop as stop_test_server, set_next_response, clear_next_response, get_last_request
 
 
 def test_expiration(self, by_max_length=False, by_max_size=False, by_max_age=False):
@@ -47,8 +47,8 @@ def test_expiration(self, by_max_length=False, by_max_size=False, by_max_age=Fal
         self.assertEqual(send_accumulated_batches_method.call_count, 1)
         self.assertEqual(len(b.get_accumulated_batches()), 2)
 
-        b.save(acesso)        
-        
+        b.save(acesso)
+
         if (by_max_age):
             sleep(.6)
 
@@ -95,6 +95,41 @@ class TestStream(TestCase):
         sleep(.5)
         self.assertAlmostEqual(b.current_batch.age, 1.5, delta=0.2)
 
+        b.delete(holding)
+
+        self.assertEqual(b.current_batch.length, 4)
+        self.assertEqual(b.current_batch.size, 324)
+        sleep(.5)
+        self.assertAlmostEqual(b.current_batch.age, 2, delta=0.2)
+
+        b.delete(secao)
+
+        self.assertEqual(b.current_batch.length, 5)
+        self.assertEqual(b.current_batch.size, 373)
+        sleep(.5)
+        self.assertAlmostEqual(b.current_batch.age, 2.5, delta=0.2)
+
+        b.delete(acesso)
+
+        self.assertEqual(b.current_batch.length, 6)
+        self.assertEqual(b.current_batch.size, 423)
+        sleep(.5)
+        self.assertAlmostEqual(b.current_batch.age, 3, delta=0.2)
+
+        self.assertEqual(
+            b.current_batch.json(),
+            '[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]'
+        )
+
+        b.save(holding)
+
+        self.assertEqual(b.current_batch.length, 6)
+
+        self.assertEqual(
+            b.current_batch.json(),
+            '[{"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}, {"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}]'
+        )
+
     def test_expiration_by_max_length(self):
         test_expiration(self, by_max_length=True)
 
@@ -103,6 +138,63 @@ class TestStream(TestCase):
 
     def test_expiration_by_max_age(self):
         test_expiration(self, by_max_age=True)
+
+    def test_sending_batch(self):
+        holding = PanamahHolding(id='1234', descricao='teste')
+        acesso = PanamahAcesso(id='4321', funcionario_ids=['1', '2'])
+        secao = PanamahSecao(id='5555', codigo='6666', descricao='teste')
+
+        b = BatchProcessor('auth', 'secret', '12345', batch_max_length=6)
+
+        b.save(holding)
+        b.save(acesso)
+        b.save(secao)
+
+        b.delete(holding)
+        b.delete(secao)
+        b.delete(acesso)
+
+        start_test_server()
+        try:
+            b.process()
+            b.process()
+
+            request = get_last_request()
+
+            expected_payload = '[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]'
+
+            self.assertEqual(request['payload'], expected_payload)
+        finally:
+            stop_test_server()
+
+    def test_flushing(self):
+        holding = PanamahHolding(id='1234', descricao='teste')
+        acesso = PanamahAcesso(id='4321', funcionario_ids=['1', '2'])
+        secao = PanamahSecao(id='5555', codigo='6666', descricao='teste')
+
+        b = BatchProcessor('auth', 'secret', '12345', batch_max_length=9999)
+
+        b.save(holding)
+        b.save(acesso)
+        b.save(secao)
+
+        b.delete(holding)
+        b.delete(secao)
+        b.delete(acesso)
+
+        start_test_server()
+        try:
+            b.process()
+            b.flush()
+
+            request = get_last_request()
+
+            expected_payload = '[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]'
+
+            self.assertEqual(request['payload'], expected_payload)
+        finally:
+            stop_test_server()
+
 
 if __name__ == '__main__':
     main()
