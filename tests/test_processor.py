@@ -298,12 +298,12 @@ class TestStream(TestCase):
                 return (resources, 2)
             else:
                 return (resources, 0)
-        with mock.patch.object(processor, 'request_pending_resources', side_effect=fake_request_pending_resources) as request_pending_resources_method:
-            models = processor.get_pending_resources()
-            self.assertEqual(len(models), 3)
-            self.assertTrue(isinstance(models[0], PanamahSecao))
-            self.assertTrue(isinstance(models[1], PanamahLoja))
-            self.assertTrue(isinstance(models[2], PanamahProduto))
+        with mock.patch.object(processor, 'request_pending_resources', side_effect=fake_request_pending_resources):
+            resources = processor.get_pending_resources()
+            self.assertEqual(len(resources), 2)
+            self.assertTrue(isinstance(resources['00934509022'][0], PanamahSecao))
+            self.assertTrue(isinstance(resources['02541926375'][0], PanamahLoja))
+            self.assertTrue(isinstance(resources['02541926375'][1], PanamahProduto))
 
     def test_recover_failures(self):
         processor = BatchProcessor(

@@ -169,11 +169,13 @@ class BatchProcessor(Thread):
                 count,
                 concat=pending_resources
             )
-        result = []
-        for value in pending_resources.values():
+        result = {}
+        for assinanteId, value in pending_resources.items():
+            if assinanteId not in result:
+                result[assinanteId] = []
             for modelName, ids in value.items():
                 for id in ids:
-                    result.append(model_from_json(modelName, {'id': id}))
+                    result[assinanteId].append(model_from_json(modelName, {'id': id}))
         return result
 
     def flush(self):
