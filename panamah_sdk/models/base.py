@@ -26,8 +26,10 @@ class Model():
     def __setattr__(self, name, value):
         if name in self.schema:
             field = self.schema[name]
-            self.values[name] = field.cast(
-                value) if hasattr(field, 'cast') else value
+            if value is None:
+                self.values[name] = None
+            else:
+                self.values[name] = field.cast(value) if hasattr(field, 'cast') else value
         elif name == 'values':
             super(Model, self).__setattr__(name, value)
         else:
@@ -115,7 +117,7 @@ class NumberField(Field):
         super().__init__('number', required, default)
 
     def cast(self, value):
-        return int(value)
+        return float(value)
 
 
 class BooleanField(Field):
