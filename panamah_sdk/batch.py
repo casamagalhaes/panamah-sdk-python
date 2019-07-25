@@ -39,9 +39,6 @@ class Batch():
             with open(filename, mode='w') as fp:
                 fp.write('[]')
 
-    def delete(self, directory):
-        os.remove('%s/%s' % (directory, self.filename))
-
     def save(self, directory, filename=None):
         with open('%s/%s' % (directory, filename if filename is not None else self.filename), mode='w') as fp:
             return fp.write(self.json())
@@ -96,6 +93,3 @@ class Batch():
 
     def hash(self):
         return base64.b64encode(hashlib.sha1(self.json().encode('utf-8')).digest()).decode('utf-8')
-
-    def __str__(self):
-        return self.json()
