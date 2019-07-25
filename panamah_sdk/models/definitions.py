@@ -437,3 +437,11 @@ class PanamahTituloReceber(Model):
         'data_vencimento': DateField(required=True),
         'pagamentos': ObjectListField(required=True, object_class=PanamahTituloReceberPagamento)
     }
+
+
+def from_json(name, json):
+    for cls_name in globals():
+        cls = globals()[cls_name]
+        if type(cls) is type(object) and issubclass(cls, Model) and hasattr(cls, 'name') and cls.name == name:
+            return cls.from_json(json)
+    return None

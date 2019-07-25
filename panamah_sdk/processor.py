@@ -8,6 +8,7 @@ from .client import StreamClient
 from .batch import Batch
 from .exceptions import DataException
 from .operation import Operation, Update, Delete
+from .models.definitions import from_json as model_from_json
 
 ROOT_PATH = './.panamah'
 ACCUMULATED_PATH = ROOT_PATH + '/accumulated'
@@ -112,12 +113,16 @@ class BatchProcessor(Thread):
 
     def recover_from_failures(self, batch, failures):
         if failures['falhas']['total'] > 0:
-            failed_ids = [Operation.from_json(item).id for item in failures['falhas']['itens']]
+            failed_ids = [Operation.from_json(
+                item).id for item in failures['falhas']['itens']]
             failed_operations = [Operation.from_json(operation) for operation in batch.operations
                                  if next((failed_id for failed_id in failed_ids
                                           if failed_id == Operation.from_json(operation).id
                                           ), False)]
-            prioritized_batch = Batch(operations=failed_operations, high_priority=True)
+            prioritized_batch = Batch(
+                operations=failed_operations,
+                high_priority=True
+            )
             prioritized_batch.save(directory=ACCUMULATED_PATH)
 
     def save(self, model, assinanteId=None):
@@ -139,27 +144,37 @@ class BatchProcessor(Thread):
         result = concat if concat is not None else {}
         response = self.client.get(
             '/stream/pending-resources?start=%d&count=%d' % (start, count))
+        count = 0
         if response.status_code == 200:
             data = response.json()
-            if len(data) > 0:
-                for assinanteId, value in data.items():
-                    for modelName, ids in value.items():
-                        if assinanteId not in result:
-                            result[assinanteId] = {}
-                        if modelName not in result[assinanteId]:
-                            result[assinanteId][modelName] = []
-                        result[assinanteId][modelName] = result[assinanteId][modelName] + ids
+            count = len(data)
+            for assinanteId, value in data.items():
+                for modelName, ids in value.items():
+                    if assinanteId not in result:
+                        result[assinanteId] = {}
+                    if modelName not in result[assinanteId]:
+                        result[assinanteId][modelName] = []
+                    result[assinanteId][modelName] = result[assinanteId][modelName] + ids
         else:
             raise DataException('Erro ao buscar recursos pendentes.')
-        return result
+        return (result, count)
 
     def get_pending_resources(self):
         start = 0
         count = 100
-        data = self.request_pending_resources()
-        while len(data) > 0:
-            data = self.request_pending_resources(start + count, count, data)
-        return data
+        (pending_resources, count) = self.request_pending_resources()
+        while count > 0:
+            (pending_resources, count) = self.request_pending_resources(
+                start + count,
+                count,
+                concat=pending_resources
+            )
+        result = []
+        for value in pending_resources.values():
+            for modelName, ids in value.items():
+                for id in ids:
+                    result.append(model_from_json(modelName, {'id': id}))
+        return result
 
     def flush(self):
         self.accumulate_current_batch()

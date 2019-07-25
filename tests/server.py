@@ -166,7 +166,6 @@ server_address = ('127.0.0.1', 2020)
 
 
 def start_server():
-    print('Starting server -> %s:%d' % server_address)
     httpd = HTTPServer(server_address, TestHTTPServer)
     try:
         httpd.serve_forever()

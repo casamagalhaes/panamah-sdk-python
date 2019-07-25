@@ -51,8 +51,8 @@ class Model():
                     item, Model) else item for item in value]
             else:
                 field = self.schema[key]
-                if hasattr(field, 'serialize_to_json'):
-                    result[key] = field.serialize_to_json(value)
+                if hasattr(field, 'to_json'):
+                    result[key] = field.to_json(value)
                 else:
                     result[key] = value
         return json.dumps(result) if dumps else result
@@ -65,8 +65,8 @@ class Model():
                 field = cls.schema[key]
 
                 def deserialize(field, value):
-                    if hasattr(field, 'deserialize_from_json'):
-                        return field.deserialize_from_json(value)
+                    if hasattr(field, 'from_json'):
+                        return field.from_json(value)
                     else:
                         return value
                 if isinstance(value, list):
@@ -140,10 +140,10 @@ class DateField(Field):
         else:
             raise ValueError('data invalida')
 
-    def serialize_to_json(self, value):
+    def to_json(self, value):
         return value.isoformat()
 
-    def deserialize_from_json(self, value):
+    def from_json(self, value):
         return self.cast(value)
 
 
@@ -181,7 +181,7 @@ class ObjectField(Field):
                 raise ValueError(
                     'valor deve ser um modelo valido do tipo %s' % self.object_class.__name__)
 
-    def deserialize_from_json(self, value):
+    def from_json(self, value):
         return self.object_class.from_json(value)
 
 
