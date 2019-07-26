@@ -1,7 +1,12 @@
 import time
 import atexit
+from os import environ
 from .models.base import Model
 from .processor import BatchProcessor
+
+ENVIRONMENT_AUTHORIZATION_TOKEN = environ.get('PANAMAH_AUTHORIZATION_TOKEN')
+ENVIRONMENT_SECRET = environ.get('PANAMAH_SECRET')
+ENVIRONMENT_ASSINANTE_ID = environ.get('PANAMAH_ASSINANTE_ID')
 
 
 class PanamahStream():
@@ -38,8 +43,8 @@ class PanamahStream():
 
     instance = None
 
-    def __init__(self, authorization_token, secret, assinante_id='*'):
-        if self.instance is None:
+    def __init__(self, authorization_token=ENVIRONMENT_AUTHORIZATION_TOKEN, secret=ENVIRONMENT_SECRET, assinante_id=ENVIRONMENT_ASSINANTE_ID or '*'):
+        if self.instance:
             self.instance = PanamahStream._PanamahStream(
                 authorization_token, secret, assinante_id)
         PanamahStream.authorization_token = authorization_token

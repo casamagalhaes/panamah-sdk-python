@@ -1,6 +1,9 @@
+from os import environ
 from .models.definitions import PanamahAssinante
 from .client import AdminClient
 from .exceptions import NotFoundException, AdminException, ConflictException
+
+ENVIRONMENT_AUTHORIZATION_TOKEN = environ.get('PANAMAH_AUTHORIZATION_TOKEN')
 
 
 class PanamahAdmin():
@@ -46,7 +49,7 @@ class PanamahAdmin():
 
     instance = None
 
-    def __init__(self, authorization_token):
+    def __init__(self, authorization_token=ENVIRONMENT_AUTHORIZATION_TOKEN):
         if self.instance is None:
             self.instance = PanamahAdmin._PanamahAdmin(authorization_token)
         PanamahAdmin.authorization_token = authorization_token

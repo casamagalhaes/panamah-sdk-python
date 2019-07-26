@@ -33,9 +33,7 @@ class Nfe:
     def deserialize_cliente(cls, xml):
         root = get_property(xml, 'NFe') or get_property(xml, 'nfeProc')
         return PanamahCliente(
-            id=get_property(root, 'NFe.infNFe.dest.CNPJ') or get_property(
-                root, 'NFe.infNFe.dest.CPF'
-            ),
+            id=get_property(root, 'NFe.infNFe.dest.CNPJ') or get_property(root, 'NFe.infNFe.dest.CPF'),
             nome=get_property(root, 'NFe.infNFe.dest.xNome'),
             numero_documento=get_property(root, 'NFe.infNFe.dest.CNPJ') or get_property(
                 root, 'NFe.infNFe.dest.CPF'

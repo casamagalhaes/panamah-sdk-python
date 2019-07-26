@@ -4,7 +4,7 @@ import base64
 import hashlib
 from .exceptions import AuthException, RefreshException
 
-GLOBAL_BASE_URL = "http://127.0.0.1:2020"  # "https://panamah.io/api/v2"
+GLOBAL_BASE_URL = "https://panamah.io/api/v2"
 GLOBAL_SDK_IDENTITY = "panamah-python1.0.0"
 
 
