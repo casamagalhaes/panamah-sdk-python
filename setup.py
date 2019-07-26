@@ -1,24 +1,21 @@
-#!/usr/bin/env python
-import argparse
-import json
-from os import path, chdir
-import unittest
+import setuptools
 
-parser = argparse.ArgumentParser(description='Setup')
-parser.set_defaults(which='all')
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
-subparsers = parser.add_subparsers(help='commands')
-
-test = subparsers.add_parser('test', help='test help')
-test.set_defaults(which='test')
-
-args = parser.parse_args()
-
-if args.which == 'test':
-    tests = unittest.TestLoader().discover('.')
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
-    if result.wasSuccessful():
-        exit(0)
-    exit(1)
-
-exit(0)
+setuptools.setup(
+    name="panamah-sdk-python",
+    version="0.0.1",
+    author="Casa Magalhães",
+    author_email="contato@casamagalhaes.com.br",
+    description="Panamah Software Development Kit for Python",
+    long_description="APIs and models for Panamah services",
+    long_description_content_type="text/markdown",
+    url="https://github.com/casamagalhaes/panamah-sdk-python",
+    packages=setuptools.find_packages(),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+)
