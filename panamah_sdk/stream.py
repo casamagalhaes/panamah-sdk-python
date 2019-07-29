@@ -27,16 +27,20 @@ class PanamahStream():
             return hasattr(model, 'name') and model.name != 'ASSINANTE'
 
         def save(self, model, assinanteId=None):
-            if isinstance(model, Model) and self.is_acceptable_model(model):
-                self.processor.save(model, assinanteId)
-            else:
-                raise ValueError('model deve ser um modelo valido do Panamah')
+            models = model if isinstance(model, list) else [model]
+            for item in models:
+                if isinstance(item, Model) and self.is_acceptable_model(item):
+                    self.processor.save(item, assinanteId)
+                else:
+                    raise ValueError('model deve ser um modelo valido do Panamah')
 
         def delete(self, model, assinanteId=None):
-            if isinstance(model, Model) and self.is_acceptable_model(model):
-                self.processor.delete(model, assinanteId)
-            else:
-                raise ValueError('model deve ser um modelo valido do Panamah')
+            models = model if isinstance(model, list) else [model]
+            for item in models:
+                if isinstance(item, Model) and self.is_acceptable_model(item):
+                    self.processor.delete(item, assinanteId)
+                else:
+                    raise ValueError('model deve ser um modelo valido do Panamah')
 
         def flush(self):
             self.processor.flush()
@@ -44,7 +48,7 @@ class PanamahStream():
     instance = None
 
     def __init__(self, authorization_token=ENVIRONMENT_AUTHORIZATION_TOKEN, secret=ENVIRONMENT_SECRET, assinante_id=ENVIRONMENT_ASSINANTE_ID or '*'):
-        if self.instance:
+        if self.instance is None:
             self.instance = PanamahStream._PanamahStream(
                 authorization_token, secret, assinante_id)
         PanamahStream.authorization_token = authorization_token

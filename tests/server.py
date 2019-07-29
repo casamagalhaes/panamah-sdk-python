@@ -3,9 +3,9 @@ import os
 import re
 import shutil
 import json
+import requests
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from .routes import routes
-import requests
 
 next_payload = None
 next_status_code = -1
@@ -172,6 +172,7 @@ def start_server():
     except KeyboardInterrupt:
         pass
     httpd.server_close()
+
 
 def set_next_response(status_code, payload, path_regex=None):
     request = {'status_code': status_code, 'payload': payload}
