@@ -12,7 +12,7 @@ class PanamahAssinante(Model):
         'cidade': StringField(required=True),
         'revenda_id': StringField(required=False, json_name='revendaId'),
         'bairro': StringField(required=True),
-        'softwares_ativos': StringListField(required=True, allowedValues=['MILENIO', 'SYSPDV', 'VAREJOFACIL', 'SYSPDVWEB', 'EASYASSIST', 'SYSPDV_APP', 'COLETOR']),
+        'softwares_ativos': StringListField(required=True, allowedValues=['MILENIO', 'SYSPDV', 'VAREJOFACIL', 'SYSPDVWEB', 'EASYASSIST', 'SYSPDV_APP', 'COLETOR'], json_name='softwaresAtivos'),
         'softwares_em_contratos_de_manutencao': StringListField(required=True, allowedValues=['MILENIO', 'SYSPDV', 'VAREJOFACIL', 'SYSPDVWEB', 'EASYASSIST', 'SYSPDV_APP', 'COLETOR']),
         'series': StringListField(required=False),
         'ativo': BooleanField(required=True, default=True)
@@ -47,7 +47,7 @@ class PanamahGrupo(Model):
         'id': StringField(required=True),
         'codigo': StringField(required=True),
         'descricao': StringField(required=True),
-        'secao_id': StringField(required=True)
+        'secao_id': StringField(required=True, json_name='secaoId')
     }
 
 
@@ -57,8 +57,8 @@ class PanamahSubgrupo(Model):
         'id': StringField(required=True),
         'codigo': StringField(required=True),
         'descricao': StringField(required=True),
-        'secao_id': StringField(required=True),
-        'grupo_id': StringField(required=True)
+        'secao_id': StringField(required=True, json_name='secaoId'),
+        'grupo_id': StringField(required=True, json_name='grupoId')
     }
 
 
@@ -76,7 +76,7 @@ class PanamahLoja(Model):
         'ativa': BooleanField(required=True),
         'id': StringField(required=True),
         'descricao': StringField(required=True),
-        'numero_documento': StringField(required=True),
+        'numero_documento': StringField(required=True, json_name='numeroDocumento'),
         'matriz': BooleanField(required=True),
         'holding_id': StringField(required=True, json_name='holdingId'),
         'ramo': StringField(required=True),
@@ -102,7 +102,7 @@ class PanamahMeta(Model):
         'mes': NumberField(required=True),
         'ano': NumberField(required=True),
         'loja_id': StringField(required=True, json_name='lojaId'),
-        'secao_id': StringField(required=True),
+        'secao_id': StringField(required=True, json_name='secaoId'),
         'valor': NumberField(required=True)
     }
 
@@ -122,7 +122,7 @@ class PanamahFuncionario(Model):
         'id': StringField(required=True),
         'login': StringField(required=False),
         'nome': StringField(required=True),
-        'numero_documento': StringField(required=False),
+        'numero_documento': StringField(required=False, json_name='numeroDocumento'),
         'ativo': BooleanField(required=True),
         'senha': StringField(required=False),
         'loja_ids': StringListField(required=False, json_name='lojaIds')
@@ -133,7 +133,7 @@ class PanamahAcesso(Model):
     name = 'ACESSO'
     schema = {
         'id': StringField(required=True),
-        'funcionario_ids': StringListField(required=True)
+        'funcionario_ids': StringListField(required=True, json_name='funcionarioIds')
     }
 
 
@@ -142,7 +142,7 @@ class PanamahCliente(Model):
     schema = {
         'id': StringField(required=True),
         'nome': StringField(required=True),
-        'numero_documento': StringField(required=True),
+        'numero_documento': StringField(required=True, json_name='numeroDocumento'),
         'ramo': StringField(required=True),
         'uf': StringField(required=True),
         'cidade': StringField(required=True),
@@ -155,7 +155,7 @@ class PanamahFornecedor(Model):
     schema = {
         'id': StringField(required=True),
         'nome': StringField(required=True),
-        'numero_documento': StringField(required=True),
+        'numero_documento': StringField(required=True, json_name='numeroDocumento'),
         'ramo': StringField(required=True),
         'uf': StringField(required=True),
         'cidade': StringField(required=True),
@@ -172,7 +172,7 @@ class PanamahProdutoFornecedor(Model):
 
 class PanamahProdutoComposicaoItem(Model):
     schema = {
-        'produto_id': StringField(required=True),
+        'produto_id': StringField(required=True, json_name='produtoId'),
         'quantidade': NumberField(required=True)
     }
 
@@ -188,17 +188,17 @@ class PanamahProduto(Model):
     name = 'PRODUTO'
     schema = {
         'composicao': ObjectField(required=False, object_class=PanamahProdutoComposicao),
-        'tipo_composicao': StringField(required=False),
+        'tipo_composicao': StringField(required=False, json_name='tipoComposicao'),
         'descricao': StringField(required=True),
         'data_inclusao': DateField(required=False, json_name='dataInclusao'),
         'finalidade': StringField(required=False),
         'ativo': BooleanField(required=False),
-        'grupo_id': StringField(required=False),
+        'grupo_id': StringField(required=False, json_name='grupoId'),
         'id': StringField(required=True),
-        'peso_variavel': BooleanField(required=False),
-        'quantidade_itens_embalagem': NumberField(required=False),
-        'secao_id': StringField(required=True),
-        'subgrupo_id': StringField(required=False),
+        'peso_variavel': BooleanField(required=False, json_name='pesoVariavel'),
+        'quantidade_itens_embalagem': NumberField(required=False, json_name='quantidadeItensEmbalagem'),
+        'secao_id': StringField(required=True, json_name='secaoId'),
+        'subgrupo_id': StringField(required=False, json_name='subgrupoId'),
         'fornecedores': ObjectListField(required=False, object_class=PanamahProdutoFornecedor)
     }
 
@@ -207,7 +207,7 @@ class PanamahEan(Model):
     name = 'EAN'
     schema = {
         'id': StringField(required=True),
-        'produto_id': StringField(required=True),
+        'produto_id': StringField(required=True, json_name='produtoId'),
         'tributado': BooleanField(required=False)
     }
 
@@ -215,15 +215,15 @@ class PanamahEan(Model):
 class PanamahTrocaFormaPagamento(Model):
     name = 'TROCA_FORMA_PAGAMENTO'
     schema = {
-        'autorizador_id': StringField(required=False),
+        'autorizador_id': StringField(required=False, json_name='autorizadorId'),
         'data': DateField(required=True),
         'forma_pagamento_destino_id': StringField(required=True, json_name='formaPagamentoDestinoId'),
         'forma_pagamento_origem_id': StringField(required=True, json_name='formaPagamentoOrigemId'),
         'id': StringField(required=True),
         'loja_id': StringField(required=True, json_name='lojaId'),
         'venda_id': StringField(required=False, json_name='vendaId'),
-        'operador_id': StringField(required=False),
-        'sequencial_pagamento': StringField(required=True),
+        'operador_id': StringField(required=False, json_name='operadorId'),
+        'sequencial_pagamento': StringField(required=True, json_name='sequencialPagamento'),
         'valor': NumberField(required=True),
         'valor_contra_vale_ou_troco': NumberField(required=False, json_name='valorContraValeOuTroco')
     }
@@ -232,28 +232,28 @@ class PanamahTrocaFormaPagamento(Model):
 class PanamahTrocaDevolucaoItem(Model):
     schema = {
         'desconto': NumberField(required=False),
-        'produto_id': StringField(required=True),
+        'produto_id': StringField(required=True, json_name='produtoId'),
         'quantidade': NumberField(required=True),
-        'valor_total': NumberField(required=True),
-        'valor_unitario': NumberField(required=True),
-        'vendedor_id': StringField(required=False)
+        'valor_total': NumberField(required=True, json_name='valorTotal'),
+        'valor_unitario': NumberField(required=True, json_name='valorUnitario'),
+        'vendedor_id': StringField(required=False, json_name='vendedorId')
     }
 
 
 class PanamahTrocaDevolucao(Model):
     name = 'TROCA_DEVOLUCAO'
     schema = {
-        'autorizador_id': StringField(required=False),
+        'autorizador_id': StringField(required=False, json_name='autorizadorId'),
         'data': DateField(required=True),
         'venda_id': StringField(required=False, json_name='vendaId'),
         'id': StringField(required=True),
         'itens': ObjectListField(required=True, object_class=PanamahTrocaDevolucaoItem),
         'loja_id': StringField(required=True, json_name='lojaId'),
-        'numero_caixa': StringField(required=False),
-        'operador_id': StringField(required=False),
+        'numero_caixa': StringField(required=False, json_name='numeroCaixa'),
+        'operador_id': StringField(required=False, json_name='operadorId'),
         'sequencial': StringField(required=False),
         'valor': NumberField(required=True),
-        'vendedor_id': StringField(required=False)
+        'vendedor_id': StringField(required=False, json_name='vendedorId')
     }
 
 
@@ -269,11 +269,11 @@ class PanamahEventoCaixa(Model):
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True, json_name='lojaId'),
-        'numero_caixa': StringField(required=True),
-        'funcionario_id': StringField(required=False),
+        'numero_caixa': StringField(required=True, json_name='numeroCaixa'),
+        'funcionario_id': StringField(required=False, json_name='funcionarioId'),
         'data_hora': DateField(required=True, json_name='dataHora'),
         'tipo': StringField(required=True, allowedValues=['ABERTURA', 'FECHAMENTO', 'ENTRADA_OPERADOR', 'SAIDA_OPERADOR']),
-        'valores_declarados': ObjectListField(required=False, object_class=PanamahEventoCaixaValoresDeclarados)
+        'valores_declarados': ObjectListField(required=False, object_class=PanamahEventoCaixaValoresDeclarados, json_name='valoresDeclarados')
     }
 
 
@@ -290,16 +290,16 @@ class PanamahVendaItem(Model):
         'acrescimo': NumberField(required=False),
         'desconto': NumberField(required=False),
         'efetivo': BooleanField(required=True, default=True),
-        'funcionario_id': StringField(required=False),
+        'funcionario_id': StringField(required=False, json_name='funcionarioId'),
         'preco': NumberField(required=True),
-        'produto_id': StringField(required=True),
-        'codigo_registrado': StringField(required=False),
+        'produto_id': StringField(required=True, json_name='produtoId'),
+        'codigo_registrado': StringField(required=False, json_name='codigoRegistrado'),
         'promocao': BooleanField(required=False),
         'quantidade': NumberField(required=True),
         'servico': NumberField(required=False),
-        'valor_total': NumberField(required=True),
-        'valor_unitario': NumberField(required=True),
-        'tipo_preco': StringField(required=True),
+        'valor_total': NumberField(required=True, json_name='valorTotal'),
+        'valor_unitario': NumberField(required=True, json_name='valorUnitario'),
+        'tipo_preco': StringField(required=True, json_name='tipoPreco'),
         'custo': NumberField(required=False),
         'markup': NumberField(required=False),
         'lucro': NumberField(required=False)
@@ -311,24 +311,24 @@ class PanamahVenda(Model):
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True, json_name='lojaId'),
-        'cliente_id': StringField(required=False),
-        'funcionario_id': StringField(required=False),
+        'cliente_id': StringField(required=False, json_name='clienteId'),
+        'funcionario_id': StringField(required=False, json_name='funcionarioId'),
         'data': DateField(required=True),
         'data_hora_inicio': DateField(required=False, json_name='dataHoraInicio'),
         'data_hora_fim': DateField(required=False, json_name='dataHoraFim'),
         'data_hora_venda': DateField(required=True, json_name='dataHoraVenda'),
         'desconto': NumberField(required=False),
         'efetiva': BooleanField(required=True, default=True),
-        'quantidade_itens': NumberField(required=True),
+        'quantidade_itens': NumberField(required=True, json_name='quantidadeItens'),
         'quantidade_itens_cancelados': NumberField(required=False),
         'sequencial': StringField(required=True),
         'servico': NumberField(required=False),
-        'tipo_desconto': StringField(required=False),
-        'tipo_preco': StringField(required=True),
+        'tipo_desconto': StringField(required=False, json_name='tipoDesconto'),
+        'tipo_preco': StringField(required=True, json_name='tipoPreco'),
         'valor': NumberField(required=True),
         'valor_itens_cancelados': NumberField(required=False),
         'acrescimo': NumberField(required=False),
-        'numero_caixa': StringField(required=False),
+        'numero_caixa': StringField(required=False, json_name='numeroCaixa'),
         'itens': ObjectListField(required=True, object_class=PanamahVendaItem),
         'pagamentos': ObjectListField(required=True, object_class=PanamahVendaPagamento)
     }
@@ -338,10 +338,10 @@ class PanamahCompraItem(Model):
     schema = {
         'acrescimo': NumberField(required=False),
         'desconto': NumberField(required=False),
-        'produto_id': StringField(required=True),
+        'produto_id': StringField(required=True, json_name='produtoId'),
         'quantidade': NumberField(required=True),
-        'valor_total': NumberField(required=True),
-        'valor_unitario': NumberField(required=True)
+        'valor_total': NumberField(required=True, json_name='valorTotal'),
+        'valor_unitario': NumberField(required=True, json_name='valorUnitario')
     }
 
 
@@ -350,15 +350,15 @@ class PanamahCompra(Model):
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True, json_name='lojaId'),
-        'fornecedor_id': StringField(required=False),
-        'funcionario_id': StringField(required=False),
+        'fornecedor_id': StringField(required=False, json_name='fornecedorId'),
+        'funcionario_id': StringField(required=False, json_name='funcionarioId'),
         'data_entrada': DateField(required=True, json_name='dataEntrada'),
         'data_emissao': DateField(required=True, json_name='dataEmissao'),
         'data_hora_compra': DateField(required=True, json_name='dataHoraCompra'),
         'desconto': NumberField(required=False),
         'efetiva': BooleanField(required=True, default=True),
-        'quantidade_itens': NumberField(required=True),
-        'tipo_desconto': StringField(required=False),
+        'quantidade_itens': NumberField(required=True, json_name='quantidadeItens'),
+        'tipo_desconto': StringField(required=False, json_name='tipoDesconto'),
         'valor': NumberField(required=True),
         'acrescimo': NumberField(required=False),
         'itens': ObjectListField(required=True, object_class=PanamahCompraItem)
@@ -381,7 +381,7 @@ class PanamahEstoqueMovimentacao(Model):
         'id': StringField(required=True),
         'local_estoque_id': StringField(required=True),
         'data_hora': DateField(required=True, json_name='dataHora'),
-        'produto_id': StringField(required=True),
+        'produto_id': StringField(required=True, json_name='produtoId'),
         'quantidade': NumberField(required=True),
         'custo': NumberField(required=True),
         'preco': NumberField(required=True),
@@ -401,13 +401,13 @@ class PanamahTituloPagar(Model):
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True, json_name='lojaId'),
-        'fornecedor_id': StringField(required=True),
+        'fornecedor_id': StringField(required=True, json_name='fornecedorId'),
         'documento': StringField(required=True),
-        'valor_nominal': NumberField(required=True),
-        'valor_juros': NumberField(required=True),
-        'valor_multa': NumberField(required=True),
-        'valor_devido': NumberField(required=True),
-        'valor_pago': NumberField(required=True),
+        'valor_nominal': NumberField(required=True, json_name='valorNominal'),
+        'valor_juros': NumberField(required=True, json_name='valorJuros'),
+        'valor_multa': NumberField(required=True, json_name='valorMulta'),
+        'valor_devido': NumberField(required=True, json_name='valorDevido'),
+        'valor_pago': NumberField(required=True, json_name='valorPago'),
         'data_emissao': DateField(required=True, json_name='dataEmissao'),
         'data_vencimento': DateField(required=True, json_name='dataVencimento'),
         'pagamentos': ObjectListField(required=True, object_class=PanamahTituloPagarPagamento)
@@ -426,13 +426,13 @@ class PanamahTituloReceber(Model):
     schema = {
         'id': StringField(required=True),
         'loja_id': StringField(required=True, json_name='lojaId'),
-        'cliente_id': StringField(required=True),
+        'cliente_id': StringField(required=True, json_name='clienteId'),
         'documento': StringField(required=True),
-        'valor_nominal': NumberField(required=True),
-        'valor_juros': NumberField(required=True),
-        'valor_multa': NumberField(required=True),
-        'valor_devido': NumberField(required=True),
-        'valor_pago': NumberField(required=True),
+        'valor_nominal': NumberField(required=True, json_name='valorNominal'),
+        'valor_juros': NumberField(required=True, json_name='valorJuros'),
+        'valor_multa': NumberField(required=True, json_name='valorMulta'),
+        'valor_devido': NumberField(required=True, json_name='valorDevido'),
+        'valor_pago': NumberField(required=True, json_name='valorPago'),
         'data_emissao': DateField(required=True, json_name='dataEmissao'),
         'data_vencimento': DateField(required=True, json_name='dataVencimento'),
         'pagamentos': ObjectListField(required=True, object_class=PanamahTituloReceberPagamento)

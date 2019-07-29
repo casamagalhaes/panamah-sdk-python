@@ -1,12 +1,24 @@
 import time
 import atexit
 from os import environ
+from events import Events
 from .models.base import Model
 from .processor import BatchProcessor
 
 ENVIRONMENT_AUTHORIZATION_TOKEN = environ.get('PANAMAH_AUTHORIZATION_TOKEN')
 ENVIRONMENT_SECRET = environ.get('PANAMAH_SECRET')
 ENVIRONMENT_ASSINANTE_ID = environ.get('PANAMAH_ASSINANTE_ID')
+
+
+class BoolHook:
+    def __init__(self, initial_result=True):
+        self.result = initial_result
+
+    def set_false(self):
+        self.result = False
+
+    def set_true(self):
+        self.result = True
 
 
 class PanamahStream():
@@ -18,29 +30,53 @@ class PanamahStream():
             self.processor = BatchProcessor(
                 authorization_token, secret, assinante_id)
             self.processor.start()
+            self.events = Events()
 
             def flush():
-                self.processor.flush()
-            atexit.register(flush)
+                try:
+                    self.processor.flush()
+                except Exception as e:
+                    print('Flushing falhou com: ', str(e))
+            # atexit.register(flush)
 
         def is_acceptable_model(self, model):
             return hasattr(model, 'name') and model.name != 'ASSINANTE'
 
-        def save(self, model, assinanteId=None):
-            models = model if isinstance(model, list) else [model]
-            for item in models:
-                if isinstance(item, Model) and self.is_acceptable_model(item):
-                    self.processor.save(item, assinanteId)
-                else:
-                    raise ValueError('model deve ser um modelo valido do Panamah')
+        def emit(self, event, *args):
+            event_slot = getattr(self.events, event)
+            event_slot(*args)
 
-        def delete(self, model, assinanteId=None):
+        def on(self, event, fn):
+            event_slot = getattr(self.events, event)
+            event_slot += fn
+
+        def off(self, event, fn):
+            event_slot = getattr(self.events, event)
+            event_slot -= fn
+
+        def save(self, model, assinante_id=None):
             models = model if isinstance(model, list) else [model]
             for item in models:
                 if isinstance(item, Model) and self.is_acceptable_model(item):
-                    self.processor.delete(item, assinanteId)
+                    allow_save = BoolHook()
+                    self.emit('before_save', item, allow_save.set_false)
+                    if allow_save.result:
+                        self.processor.save(item, assinante_id)
                 else:
-                    raise ValueError('model deve ser um modelo valido do Panamah')
+                    raise ValueError(
+                        'model deve ser um modelo valido do Panamah')
+
+        def delete(self, model, assinante_id=None):
+            models = model if isinstance(model, list) else [model]
+            for item in models:
+                if isinstance(item, Model) and self.is_acceptable_model(item):
+                    allow_delete = BoolHook()
+                    self.emit('before_delete', item, allow_delete.set_false)
+                    if allow_delete.result:
+                        self.processor.delete(item, assinante_id)
+                else:
+                    raise ValueError(
+                        'model deve ser um modelo valido do Panamah')
 
         def flush(self):
             self.processor.flush()

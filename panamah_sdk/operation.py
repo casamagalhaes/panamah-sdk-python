@@ -35,9 +35,9 @@ class Operation():
         if self.op == 'delete':
             del result['data']
             if hasattr(self.data, 'id'):
-                result['id'] = self.data.id
+                result['data'] = { 'id': self.data.id }
             if self.id is not None:
-                result['id'] = self.id
+                result['data'] = { 'id': self.id }
         if self.assinanteId is not None:
             result['assinanteId'] = self.assinanteId
         return json.dumps(result) if dumps else result

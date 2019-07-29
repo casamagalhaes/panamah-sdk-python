@@ -89,48 +89,48 @@ class TestStream(TestCase):
         b.save(holding)
 
         self.assertEqual(b.current_batch.length, 1)
-        self.assertEqual(b.current_batch.size, 83)
+        self.assertEqual(b.current_batch.size, 107)
         sleep(.5)
         self.assertAlmostEqual(b.current_batch.age, 0.5, delta=0.2)
 
         b.save(acesso)
 
         self.assertEqual(b.current_batch.length, 2)
-        self.assertEqual(b.current_batch.size, 174)
+        self.assertEqual(b.current_batch.size, 221)
         sleep(.5)
         self.assertAlmostEqual(b.current_batch.age, 1, delta=0.2)
 
         b.save(secao)
 
         self.assertEqual(b.current_batch.length, 3)
-        self.assertEqual(b.current_batch.size, 273)
+        self.assertEqual(b.current_batch.size, 344)
         sleep(.5)
         self.assertAlmostEqual(b.current_batch.age, 1.5, delta=0.2)
 
         b.delete(holding)
 
         self.assertEqual(b.current_batch.length, 4)
-        self.assertEqual(b.current_batch.size, 324)
+        self.assertEqual(b.current_batch.size, 429)
         sleep(.5)
         self.assertAlmostEqual(b.current_batch.age, 2, delta=0.2)
 
         b.delete(secao)
 
         self.assertEqual(b.current_batch.length, 5)
-        self.assertEqual(b.current_batch.size, 373)
+        self.assertEqual(b.current_batch.size, 512)
         sleep(.5)
         self.assertAlmostEqual(b.current_batch.age, 2.5, delta=0.2)
 
         b.delete(acesso)
 
         self.assertEqual(b.current_batch.length, 6)
-        self.assertEqual(b.current_batch.size, 423)
+        self.assertEqual(b.current_batch.size, 596)
         sleep(.5)
         self.assertAlmostEqual(b.current_batch.age, 3, delta=0.2)
 
         self.assertEqual(
             b.current_batch.json(),
-            '[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]'
+            '[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update", "assinanteId": "12345"}, {"data": {"id": "4321", "funcionarioIds": ["1", "2"]}, "tipo": "ACESSO", "op": "update", "assinanteId": "12345"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update", "assinanteId": "12345"}, {"tipo": "HOLDING", "op": "delete", "data": {"id": "1234"}, "assinanteId": "12345"}, {"tipo": "SECAO", "op": "delete", "data": {"id": "5555"}, "assinanteId": "12345"}, {"tipo": "ACESSO", "op": "delete", "data": {"id": "4321"}, "assinanteId": "12345"}]'
         )
 
         b.save(holding)
@@ -139,7 +139,7 @@ class TestStream(TestCase):
 
         self.assertEqual(
             b.current_batch.json(),
-            '[{"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}, {"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}]'
+            '[{"data": {"id": "4321", "funcionarioIds": ["1", "2"]}, "tipo": "ACESSO", "op": "update", "assinanteId": "12345"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update", "assinanteId": "12345"}, {"tipo": "HOLDING", "op": "delete", "data": {"id": "1234"}, "assinanteId": "12345"}, {"tipo": "SECAO", "op": "delete", "data": {"id": "5555"}, "assinanteId": "12345"}, {"tipo": "ACESSO", "op": "delete", "data": {"id": "4321"}, "assinanteId": "12345"}, {"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update", "assinanteId": "12345"}]'
         )
 
     def test_expiration_by_max_length(self):
@@ -173,7 +173,9 @@ class TestStream(TestCase):
 
             request = get_last_request()
 
-            expected_payload = json.loads('[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]')
+            expected_payload = [{'data': {'id': '1234', 'descricao': 'teste'}, 'tipo': 'HOLDING', 'op': 'update', 'assinanteId': '12345'}, {'data': {'id': '4321', 'funcionarioIds': ['1', '2']}, 'tipo': 'ACESSO', 'op': 'update', 'assinanteId': '12345'}, {'data': {'id': '5555', 'codigo': '6666', 'descricao': 'teste'},
+                                                                                                                                                                                                                                                              'tipo': 'SECAO', 'op': 'update', 'assinanteId': '12345'}, {'tipo': 'HOLDING', 'op': 'delete', 'data': {'id': '1234'}, 'assinanteId': '12345'}, {'tipo': 'SECAO', 'op': 'delete', 'data': {'id': '5555'}, 'assinanteId': '12345'}, {'tipo': 'ACESSO', 'op': 'delete', 'data': {'id': '4321'}, 'assinanteId': '12345'}]
+
             self.assertListEqual(request['payload'], expected_payload)
         finally:
             stop_test_server()
@@ -200,7 +202,8 @@ class TestStream(TestCase):
 
             request = get_last_request()
 
-            expected_payload = json.loads('[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]')
+            expected_payload = [{'data': {'id': '1234', 'descricao': 'teste'}, 'tipo': 'HOLDING', 'op': 'update', 'assinanteId': '12345'}, {'data': {'id': '4321', 'funcionarioIds': ['1', '2']}, 'tipo': 'ACESSO', 'op': 'update', 'assinanteId': '12345'}, {'data': {'id': '5555', 'codigo': '6666', 'descricao': 'teste'},
+                                                                                                                                                                                                                                                              'tipo': 'SECAO', 'op': 'update', 'assinanteId': '12345'}, {'tipo': 'HOLDING', 'op': 'delete', 'data': {'id': '1234'}, 'assinanteId': '12345'}, {'tipo': 'SECAO', 'op': 'delete', 'data': {'id': '5555'}, 'assinanteId': '12345'}, {'tipo': 'ACESSO', 'op': 'delete', 'data': {'id': '4321'}, 'assinanteId': '12345'}]
 
             self.assertListEqual(request['payload'], expected_payload)
         finally:
@@ -301,9 +304,12 @@ class TestStream(TestCase):
         with mock.patch.object(processor, 'request_pending_resources', side_effect=fake_request_pending_resources):
             resources = processor.get_pending_resources()
             self.assertEqual(len(resources), 2)
-            self.assertTrue(isinstance(resources['00934509022'][0], PanamahSecao))
-            self.assertTrue(isinstance(resources['02541926375'][0], PanamahLoja))
-            self.assertTrue(isinstance(resources['02541926375'][1], PanamahProduto))
+            self.assertTrue(isinstance(
+                resources['00934509022'][0], PanamahSecao))
+            self.assertTrue(isinstance(
+                resources['02541926375'][0], PanamahLoja))
+            self.assertTrue(isinstance(
+                resources['02541926375'][1], PanamahProduto))
 
     def test_recover_failures(self):
         processor = BatchProcessor(

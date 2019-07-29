@@ -22,6 +22,7 @@ class BatchProcessor(Thread):
     def __init__(self, authorization_token, secret, assinante_id, batch_max_length=BATCH_MAX_LENGTH, batch_max_size=BATCH_MAX_SIZE, batch_max_age=BATCH_MAX_AGE):
         Thread.__init__(self, daemon=True)
         self.initialize_structure()
+        self.assinante_id = assinante_id
         self.multitenancy = assinante_id == '*'
         self.client = StreamClient(authorization_token, secret, assinante_id)
         self.current_batch = Batch(
@@ -125,18 +126,18 @@ class BatchProcessor(Thread):
             )
             prioritized_batch.save(directory=ACCUMULATED_PATH)
 
-    def save(self, model, assinanteId=None):
-        if self.multitenancy and assinanteId is None:
-            raise ValueError('assinanteId e requerido no modo multitenancy')
+    def save(self, model, assinante_id=None):
+        if self.multitenancy and assinante_id is None:
+            raise ValueError('assinante_id e requerido no modo multitenancy')
         model.validate()
-        operation = Update.from_model(model, assinanteId)
+        operation = Update.from_model(model, assinante_id if assinante_id else self.assinante_id)
         self.current_batch.remove(operation).append(operation)
 
-    def delete(self, model, assinanteId=None):
-        if self.multitenancy and assinanteId is None:
-            raise ValueError('assinanteId e requerido no modo multitenancy')
+    def delete(self, model, assinante_id=None):
+        if self.multitenancy and assinante_id is None:
+            raise ValueError('assinante_id e requerido no modo multitenancy')
         if hasattr(model, 'id'):
-            self.current_batch.append(Delete.from_model(model, assinanteId))
+            self.current_batch.append(Delete.from_model(model, assinante_id if assinante_id else self.assinante_id))
         else:
             raise ValueError('id obrigatorio para exclusao')
 
@@ -148,13 +149,13 @@ class BatchProcessor(Thread):
         if response.status_code == 200:
             data = response.json()
             count = len(data)
-            for assinanteId, value in data.items():
+            for assinante_id, value in data.items():
                 for modelName, ids in value.items():
-                    if assinanteId not in result:
-                        result[assinanteId] = {}
-                    if modelName not in result[assinanteId]:
-                        result[assinanteId][modelName] = []
-                    result[assinanteId][modelName] = result[assinanteId][modelName] + ids
+                    if assinante_id not in result:
+                        result[assinante_id] = {}
+                    if modelName not in result[assinante_id]:
+                        result[assinante_id][modelName] = []
+                    result[assinante_id][modelName] = result[assinante_id][modelName] + ids
         else:
             raise DataException('Erro ao buscar recursos pendentes.')
         return (result, count)
@@ -170,12 +171,12 @@ class BatchProcessor(Thread):
                 concat=pending_resources
             )
         result = {}
-        for assinanteId, value in pending_resources.items():
-            if assinanteId not in result:
-                result[assinanteId] = []
+        for assinante_id, value in pending_resources.items():
+            if assinante_id not in result:
+                result[assinante_id] = []
             for modelName, ids in value.items():
                 for id in ids:
-                    result[assinanteId].append(model_from_json(modelName, {'id': id}))
+                    result[assinante_id].append(model_from_json(modelName, {'id': id}))
         return result
 
     def flush(self):
