@@ -50,8 +50,8 @@ except NotFoundException:
 ## Exemplo de uso da API de streaming
 
 ```python
-from .stream import PanamahStream
-from .models.definitions import PanamahProduto, PanamahProdutoComposicao, PanamahProdutoComposicaoItem, PanamahProdutoFornecedor
+from panamah_sdk.stream import PanamahStream
+from panamah_sdk.models.definitions import PanamahProduto, PanamahProdutoComposicao, PanamahProdutoComposicaoItem, PanamahProdutoFornecedor
 from datetime import datetime
 from os import environ
 
