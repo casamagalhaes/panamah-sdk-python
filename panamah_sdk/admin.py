@@ -24,7 +24,7 @@ class PanamahAdmin():
                 )
 
         def create_assinante(self, assinante):
-            response = self.client.post('/admin/assinantes', assinante.json())
+            response = self.client.post('/admin/assinantes', assinante.json(dumps=False))
             if response.status_code == 201:
                 return PanamahAssinante.from_json(response.json())
             elif response.status_code == 409:
