@@ -29,11 +29,20 @@ class Model():
             if value is None:
                 self.values[name] = None
             else:
-                self.values[name] = field.cast(value) if hasattr(field, 'cast') else value
+                self.values[name] = field.cast(
+                    value) if hasattr(field, 'cast') else value
         elif name == 'values':
             super(Model, self).__setattr__(name, value)
         else:
             raise NameError("%s nao e uma propriedade do modelo" % name)
+
+    @classmethod
+    def get_field_by_json_key(cls, json_name):
+        for key in cls.schema:
+            field = cls.schema[key]
+            if hasattr(field, 'json_name') and field.json_name == json_name:
+                return field, key
+        return None, None
 
     def validate(self):
         for name, field in self.schema.items():
@@ -46,43 +55,47 @@ class Model():
     def json(self, dumps=True):
         result = {}
         for key, value in self.values.items():
+            field = self.schema[key]
+            json_key = field.json_name if field.json_name else key
             if isinstance(value, Model):
-                result[key] = value.json(dumps=False)
+                result[json_key] = value.json(dumps=False)
             elif isinstance(value, list):
-                result[key] = [item.json(dumps=False) if isinstance(
+                result[json_key] = [item.json(dumps=False) if isinstance(
                     item, Model) else item for item in value]
             else:
-                field = self.schema[key]
                 if hasattr(field, 'to_json'):
-                    result[key] = field.to_json(value)
+                    result[json_key] = field.to_json(value)
                 else:
-                    result[key] = value
+                    result[json_key] = value
         return json.dumps(result) if dumps else result
 
     @classmethod
     def from_json(cls, json):
         result = cls()
         for key, value in json.items():
-            if key in cls.schema:
-                field = cls.schema[key]
-
+            field_by_json, schema_key = cls.get_field_by_json_key(key)
+            if key in cls.schema or field_by_json:
+                field = field_by_json if field_by_json else cls.schema[key]
+                object_key = schema_key if schema_key else key
                 def deserialize(field, value):
                     if hasattr(field, 'from_json'):
                         return field.from_json(value)
                     else:
                         return value
                 if isinstance(value, list):
-                    setattr(result, key, [deserialize(field, item) if isinstance(item, object) else item for item in value])
+                    setattr(result, object_key, [deserialize(field, item) if isinstance(
+                        item, object) else item for item in value])
                 else:
-                    setattr(result, key, deserialize(field, value))
+                    setattr(result, object_key, deserialize(field, value))
         return result
 
 
 class Field():
-    def __init__(self, type='unknown', required=False, default=None):
+    def __init__(self, type='unknown', required=False, default=None, json_name=None):
         self.type = type
         self.required = required
         self.default = default
+        self.json_name = json_name
 
     def validate(self, value):
         if self.required and value is None:
@@ -90,9 +103,9 @@ class Field():
 
 
 class StringField(Field):
-    def __init__(self, allowedValues=None, required=False, default=None):
+    def __init__(self, allowedValues=None, required=False, default=None, json_name=None):
         self.allowedValues = allowedValues
-        super().__init__('string', required, default)
+        super().__init__('string', required, default, json_name)
 
     def validate(self, value):
         super().validate(value)
@@ -113,24 +126,24 @@ class StringField(Field):
 
 
 class NumberField(Field):
-    def __init__(self, required=False, default=None):
-        super().__init__('number', required, default)
+    def __init__(self, required=False, default=None, json_name=None):
+        super().__init__('number', required, default, json_name)
 
     def cast(self, value):
         return float(value)
 
 
 class BooleanField(Field):
-    def __init__(self, required=False, default=None):
-        super().__init__('date', required, default)
+    def __init__(self, required=False, default=None, json_name=None):
+        super().__init__('date', required, default, json_name)
 
     def cast(self, value):
         return bool(value)
 
 
 class DateField(Field):
-    def __init__(self, required=False, default=None):
-        super().__init__('boolean', required, default)
+    def __init__(self, required=False, default=None, json_name=None):
+        super().__init__('boolean', required, default, json_name)
 
     def cast(self, value):
         if isinstance(value, str):
@@ -150,9 +163,9 @@ class DateField(Field):
 
 
 class StringListField(Field):
-    def __init__(self, allowedValues=None, required=False, default=None):
+    def __init__(self, allowedValues=None, required=False, default=None, json_name=None):
         self.allowedValues = allowedValues
-        super().__init__('list[string]', required, default)
+        super().__init__('list[string]', required, default, json_name)
 
     def validate(self, value):
         super().validate(value)
@@ -170,9 +183,9 @@ class StringListField(Field):
 
 
 class ObjectField(Field):
-    def __init__(self, object_class=None, required=False, default=None):
+    def __init__(self, object_class=None, required=False, default=None, json_name=None):
         self.object_class = object_class
-        super().__init__('object', required, default)
+        super().__init__('object', required, default, json_name)
 
     def validate(self, value):
         super().validate(value)
@@ -188,9 +201,9 @@ class ObjectField(Field):
 
 
 class ObjectListField(Field):
-    def __init__(self, object_class=None, required=False, default=None):
+    def __init__(self, object_class=None, required=False, default=None, json_name=None):
         self.object_class = object_class
-        super().__init__('list[object]', required, default)
+        super().__init__('list[object]', required, default, json_name)
 
     def validate(self, value):
         super().validate(value)

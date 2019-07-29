@@ -1,3 +1,4 @@
+import json
 import unittest
 from datetime import date
 from panamah_sdk.models.definitions import Model, StringField, NumberField, BooleanField, DateField, ObjectField, StringListField, ObjectListField
@@ -49,6 +50,7 @@ class ParentModel(Model):
         'f': DateField(required=True),
         'g': ObjectField(required=True, object_class=ChildModel),
         'h': ObjectListField(required=True, object_class=ChildModel),
+        'aliased': StringField(required=False, json_name='aLiAsEd'),
     }
 
 
@@ -137,6 +139,7 @@ class TestClient(unittest.TestCase):
 
     def test_serialization(self):
         instance = ParentModel(
+            aliased='123',
             a='1',
             b='2',
             c=['1', '2'],
@@ -160,10 +163,15 @@ class TestClient(unittest.TestCase):
             ]
         )
 
+        expected_json = '{"aLiAsEd": "123", "a": "1", "b": "2", "c": ["1", "2"], "d": 100.0, "e": true, "f": "2019-01-03T23:59:58", "g": {"i": "foo", "j": {"z": "bar"}, "l": [{"z": "foz"}]}, "h": [{"i": "baz"}, {"i": "fox", "j": {"z": "bax"}, "l": [{"z": "xof"}]}]}'
+
         self.assertEqual(
             instance.json(),
-            '{"a": "1", "b": "2", "c": ["1", "2"], "d": 100.0, "e": true, "f": "2019-01-03T23:59:58", "g": {"i": "foo", "j": {"z": "bar"}, "l": [{"z": "foz"}]}, "h": [{"i": "baz"}, {"i": "fox", "j": {"z": "bax"}, "l": [{"z": "xof"}]}]}'
+            expected_json
         )
+
+        deserialized = ParentModel.from_json(json.loads(expected_json))
+        self.assertEqual(deserialized.aliased, '123')
 
 
 if __name__ == '__main__':
