@@ -52,8 +52,9 @@ class Batch():
         if os.path.exists(source_filename):
             shutil.move(src=source_filename, dst=destiny_filename)
 
-    def json(self):
-        return json.dumps([operation.json(dumps=False) if isinstance(operation, Operation) else operation for operation in self.operations])
+    def json(self, dumps=True):
+        operations = [operation.json(dumps=False) if isinstance(operation, Operation) else operation for operation in self.operations]
+        return json.dumps(operations) if dumps else operations
 
     def read_operations(self, filename):
         content = self.read_content(filename)

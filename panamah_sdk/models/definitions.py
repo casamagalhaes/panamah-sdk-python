@@ -199,7 +199,7 @@ class PanamahProduto(Model):
         'quantidade_itens_embalagem': NumberField(required=False),
         'secao_id': StringField(required=True),
         'subgrupo_id': StringField(required=False),
-        'fornecedores': ObjectListField(required=False, object_class=PanamahFornecedor)
+        'fornecedores': ObjectListField(required=False, object_class=PanamahProdutoFornecedor)
     }
 
 

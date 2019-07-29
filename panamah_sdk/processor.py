@@ -54,7 +54,7 @@ class BatchProcessor(Thread):
     def send_accumulated_batches(self):
         batches = self.get_accumulated_batches()
         for batch in batches:
-            response = self.client.post('/stream/data', batch.json())
+            response = self.client.post('/stream/data', batch.json(dumps=False))
             if response.status_code == 200:
                 response_data = response.json()
                 if hasattr(response_data, 'falhas'):

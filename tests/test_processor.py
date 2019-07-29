@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 from time import sleep
 from unittest import main, mock, TestCase
 from panamah_sdk.batch import Batch
@@ -172,9 +173,8 @@ class TestStream(TestCase):
 
             request = get_last_request()
 
-            expected_payload = '[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]'
-
-            self.assertEqual(request['payload'], expected_payload)
+            expected_payload = json.loads('[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]')
+            self.assertListEqual(request['payload'], expected_payload)
         finally:
             stop_test_server()
 
@@ -200,9 +200,9 @@ class TestStream(TestCase):
 
             request = get_last_request()
 
-            expected_payload = '[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]'
+            expected_payload = json.loads('[{"data": {"id": "1234", "descricao": "teste"}, "tipo": "HOLDING", "op": "update"}, {"data": {"id": "4321", "funcionario_ids": ["1", "2"]}, "tipo": "ACESSO", "op": "update"}, {"data": {"id": "5555", "codigo": "6666", "descricao": "teste"}, "tipo": "SECAO", "op": "update"}, {"tipo": "HOLDING", "op": "delete", "id": "1234"}, {"tipo": "SECAO", "op": "delete", "id": "5555"}, {"tipo": "ACESSO", "op": "delete", "id": "4321"}]')
 
-            self.assertEqual(request['payload'], expected_payload)
+            self.assertListEqual(request['payload'], expected_payload)
         finally:
             stop_test_server()
 

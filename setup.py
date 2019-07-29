@@ -17,7 +17,7 @@ with open('Pipfile.lock') as fd:
 
 setuptools.setup(
     name="panamah-sdk-python",
-    version="0.0.10",
+    version="0.0.12",
     author="Casa Magalhães",
     author_email="contato@casamagalhaes.com.br",
     description="Panamah Software Development Kit for Python",

@@ -82,7 +82,7 @@ class TestAdmin(TestCase):
 
         last_request = get_last_request()
 
-        self.assertDictEqual(json.loads(last_request['payload']), {
+        self.assertDictEqual(last_request['payload'], {
             "id": "b4705ade-d0cf-4397-b38d-902aaebeb00c",
             "nome": "ASSINANTE TESTE",
             "fantasia": "ASSINANTE TESTE",

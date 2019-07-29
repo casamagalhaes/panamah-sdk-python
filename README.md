@@ -28,16 +28,18 @@
 
 ```python
 from panamah_sdk.admin import PanamahAdmin
+from panamah_sdk.exceptions import NotFoundException
+from panamah_sdk.models.definitions import PanamahAssinante
 
-admin = PanamahAdmin(authorization_token=)
+admin = PanamahAdmin()
 
 try:
-    assinante = admin.get_assinante('18475929000132')
-except Exception as e:
-    if (e.name === 'PanamahNotFoundError') {
+    assinante = admin.get_assinante('21705632000120')
+    print(assinante)
+except NotFoundException:
         #instanciando um modelo de assinante
         assinante = PanamahAssinante(
-            id='18475929000132',
+            id='21705632000120',
             fantasia='Supermercado Exemplo',
             nome='Supermercado Exemplo Ltda',
             bairro='Rua Poebla',
@@ -45,7 +47,8 @@ except Exception as e:
             uf='CE'
         )
         #criando o assinante no Panamah
-        admin.create_assinante(assinante)
-    }
-}
+        created_assinante = admin.create_assinante(assinante)
+        print(created_assinante)
 ```
+
+## Exemplo de uso da API de streaming
