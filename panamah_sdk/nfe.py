@@ -35,9 +35,7 @@ class Nfe:
         return PanamahCliente(
             id=get_property(root, 'NFe.infNFe.dest.CNPJ') or get_property(root, 'NFe.infNFe.dest.CPF'),
             nome=get_property(root, 'NFe.infNFe.dest.xNome'),
-            numero_documento=get_property(root, 'NFe.infNFe.dest.CNPJ') or get_property(
-                root, 'NFe.infNFe.dest.CPF'
-            ),
+            numero_documento=get_property(root, 'NFe.infNFe.dest.CNPJ') or get_property(root, 'NFe.infNFe.dest.CPF'),
             uf=get_property(root, 'NFe.infNFe.dest.enderDest.UF'),
             cidade=get_property(root, 'NFe.infNFe.dest.enderDest.xMun'),
             bairro=get_property(root, 'NFe.infNFe.dest.enderDest.xBairro'),

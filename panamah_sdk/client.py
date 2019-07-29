@@ -3,8 +3,9 @@ import time
 import base64
 import hashlib
 from .exceptions import AuthException, RefreshException
+from os import environ
 
-GLOBAL_BASE_URL = "https://panamah.io/api/v2"
+GLOBAL_BASE_URL =  environ.get('PANAMAH_API_URL') if environ.get('PANAMAH_API_URL') else 'https://panamah.io/api/v2'
 GLOBAL_SDK_IDENTITY = "panamah-python1.0.0"
 
 
@@ -14,11 +15,15 @@ class Client():
     def make_request(self, method, url, payload, headers):
         path = '/' + url if not url.startswith('/') else url
         url_with_path = GLOBAL_BASE_URL + path
+        identified_headers = {
+            **headers,
+            ** {'x-sdk-identity': GLOBAL_SDK_IDENTITY}
+        } if headers else {'x-sdk-identity': GLOBAL_SDK_IDENTITY}
         response = requests.request(
             method=method,
             url=url_with_path,
             json=payload,
-            headers=headers
+            headers=identified_headers
         )
         return response
 
@@ -27,7 +32,7 @@ class Client():
             "POST",
             url,
             payload,
-            headers
+            headers=headers
         )
 
     def put(self, url, payload, headers={}):
