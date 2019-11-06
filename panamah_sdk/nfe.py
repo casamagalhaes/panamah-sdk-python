@@ -70,7 +70,7 @@ class Nfe:
             itens=[PanamahVendaItem(
                 produto_id=get_property(det, 'prod.cProd'),
                 quantidade=get_property(det, 'prod.qCom'),
-                preco=get_property(det, 'prod.vProd'),
+                preco=get_property(det, 'prod.vUnCom'),
                 valor_unitario=get_property(det, 'prod.vUnCom'),
                 valor_total=get_property(det, 'prod.vProd'),
                 desconto=get_property(det, 'prod.vDesc'),
