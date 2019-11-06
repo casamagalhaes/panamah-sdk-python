@@ -2,7 +2,7 @@ import re
 import os
 from dictor import dictor as get_property
 from xmltodict import parse as parse_xml_string
-from .models.definitions import PanamahLoja, PanamahCliente, PanamahProduto, PanamahVenda
+from .models.definitions import PanamahLoja, PanamahCliente, PanamahProduto, PanamahVenda, PanamahVendaItem
 
 
 class Nfe:
@@ -67,7 +67,15 @@ class Nfe:
             efetiva=True,
             quantidade_itens=len(dets) or 0,
             valor=get_property(root, 'NFe.infNFe.total.ICMSTot.vNF'),
-            itens=[]
+            itens=[PanamahVendaItem(
+                produto_id=get_property(det, 'prod.cProd'),
+                quantidade=get_property(det, 'prod.qCom'),
+                preco=get_property(det, 'prod.vProd'),
+                valor_unitario=get_property(det, 'prod.vUnCom'),
+                valor_total=get_property(det, 'prod.vProd'),
+                desconto=get_property(det, 'prod.vDesc'),
+                efetivo=True
+            ) for det in dets]
         )
 
     @classmethod
