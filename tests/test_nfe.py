@@ -1,7 +1,7 @@
 import os
 from unittest import main, mock, TestCase
 from panamah_sdk.nfe import Nfe
-from panamah_sdk.models.definitions import PanamahLoja, PanamahCliente, PanamahProduto, PanamahVenda
+from panamah_sdk.models.definitions import PanamahVenda
 
 
 class TestNfe(TestCase):
