@@ -163,7 +163,7 @@ class TestClient(unittest.TestCase):
             ]
         )
 
-        expected_json = '{"aLiAsEd": "123", "a": "1", "b": "2", "c": ["1", "2"], "d": 100.0, "e": true, "f": "2019-01-03T23:59:58", "g": {"i": "foo", "j": {"z": "bar"}, "l": [{"z": "foz"}]}, "h": [{"i": "baz"}, {"i": "fox", "j": {"z": "bax"}, "l": [{"z": "xof"}]}]}'
+        expected_json = '{"aLiAsEd": "123", "a": "1", "b": "2", "c": ["1", "2"], "d": 100.0, "e": true, "f": "2019-01-03T23:59:58Z", "g": {"i": "foo", "j": {"z": "bar"}, "l": [{"z": "foz"}]}, "h": [{"i": "baz"}, {"i": "fox", "j": {"z": "bax"}, "l": [{"z": "xof"}]}]}'
 
         self.assertEqual(
             instance.json(),

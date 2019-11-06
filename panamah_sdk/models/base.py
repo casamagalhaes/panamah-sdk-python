@@ -156,7 +156,7 @@ class DateField(Field):
             raise ValueError('data invalida')
 
     def to_json(self, value):
-        return value.strftime('%Y-%m-%dT%H:%m:%SZ')
+        return value.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     def from_json(self, value):
         return self.cast(value)
