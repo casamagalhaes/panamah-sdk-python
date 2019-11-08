@@ -17,6 +17,8 @@ subcommand = subparsers.add_parser('build', help='build help')
 subcommand.set_defaults(which='build')
 subcommand = subparsers.add_parser('deploy-test', help='deploy-test help')
 subcommand.set_defaults(which='deploy-test')
+subcommand = subparsers.add_parser('deploy-prod', help='deploy-prod help')
+subcommand.set_defaults(which='deploy-prod')
 
 args = parser.parse_args()
 
@@ -34,5 +36,10 @@ if args.which == 'deploy-test':
     subprocess.check_call(['python', 'cli.py', 'build'])
     subprocess.check_call(['python', '-m', 'pip', 'install', '--upgrade', 'twine'])
     subprocess.check_call(['python', '-m', 'twine', 'upload', '--repository-url', 'https://test.pypi.org/legacy/', 'dist/*'])
+    
+if args.which == 'deploy-prod':
+    subprocess.check_call(['python', 'cli.py', 'build'])
+    subprocess.check_call(['python', '-m', 'pip', 'install', '--upgrade', 'twine'])
+    subprocess.check_call(['python', '-m', 'twine', 'upload', 'dist/*'])
 
 exit(0)
