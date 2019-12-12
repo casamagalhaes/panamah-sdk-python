@@ -163,6 +163,15 @@ class PanamahFornecedor(Model):
     }
 
 
+class PanamahProdutoEan(Model):
+    schema = {
+        'id': StringField(required=True),
+        'tributado': BooleanField(required=False)
+    }
+
+    def __str__(self):
+        return self.id
+
 class PanamahProdutoFornecedor(Model):
     schema = {
         'id': StringField(required=True),
@@ -199,7 +208,8 @@ class PanamahProduto(Model):
         'quantidade_itens_embalagem': NumberField(required=False, json_name='quantidadeItensEmbalagem'),
         'secao_id': StringField(required=True, json_name='secaoId'),
         'subgrupo_id': StringField(required=False, json_name='subgrupoId'),
-        'fornecedores': ObjectListField(required=False, object_class=PanamahProdutoFornecedor)
+        'fornecedores': ObjectListField(required=False, object_class=PanamahProdutoFornecedor),
+        'eans': ObjectListField(required=False, object_class=PanamahProdutoEan)
     }
 
 

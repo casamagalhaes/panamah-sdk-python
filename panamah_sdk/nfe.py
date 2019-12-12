@@ -2,7 +2,7 @@ import re
 import os
 from dictor import dictor as get_property
 from xmltodict import parse as parse_xml_string
-from .models.definitions import PanamahLoja, PanamahCliente, PanamahProduto, PanamahVenda, PanamahVendaItem
+from .models.definitions import PanamahLoja, PanamahCliente, PanamahProduto, PanamahVenda, PanamahVendaItem, PanamahProdutoEan
 
 
 class Nfe:
@@ -46,11 +46,23 @@ class Nfe:
         root = get_property(xml, 'NFe') or get_property(xml, 'nfeProc')
         dets = get_property(root, 'NFe.infNFe.det')
         dets = dets if isinstance(dets, list) else [dets]
-        return [PanamahProduto(
+        def get_model(det):
+            produto = PanamahProduto(
                 id=get_property(det, 'prod.cProd'),
                 descricao=get_property(det, 'prod.xProd'),
                 ativo=True
-                ) for det in dets]
+            )
+            ean_tributado = get_property(det, 'prod.cEANTrib')
+            ean = get_property(det, 'prod.cEAN')
+            valid_ean = lambda val: val and val != 'SEM GTIN'
+            if valid_ean(ean_tributado) or valid_ean(ean):
+                produto.eans = []
+                if ean_tributado:
+                    produto.eans.append(PanamahProdutoEan(id=ean_tributado, tributado=True))
+                if ean and ean != ean_tributado:
+                    produto.eans.append(PanamahProdutoEan(id=ean, tributado=False))
+            return produto
+        return [get_model(det) for det in dets]
 
     @classmethod
     def deserialize_venda(cls, xml):
