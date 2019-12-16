@@ -126,8 +126,21 @@ class StringField(Field):
 
 
 class NumberField(Field):
-    def __init__(self, required=False, default=None, json_name=None):
+    def __init__(self, required=False, min_value=None, max_value=None, default=None, json_name=None):
+        self.min = min_value
+        self.max = max_value
         super().__init__('number', required, default, json_name)
+
+    def validate(self, value):
+        super().validate(value)
+
+        if value is not None and self.max is not None:
+            if value > self.max:
+                raise ValueError('valor %s ultrapassa limite máximo de %s' % (str(value), str(self.max)))
+
+        if value is not None and self.min is not None:
+            if value < self.min:
+                raise ValueError('valor %s menor que o limite mínimo de %s' % (str(value), str(self.min)))
 
     def cast(self, value):
         return float(value)

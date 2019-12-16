@@ -103,7 +103,7 @@ class PanamahMeta(Model):
         'ano': NumberField(required=True),
         'loja_id': StringField(required=True, json_name='lojaId'),
         'secao_id': StringField(required=True, json_name='secaoId'),
-        'valor': NumberField(required=True)
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99)
     }
 
 
@@ -182,14 +182,14 @@ class PanamahProdutoFornecedor(Model):
 class PanamahProdutoComposicaoItem(Model):
     schema = {
         'produto_id': StringField(required=True, json_name='produtoId'),
-        'quantidade': NumberField(required=True)
+        'quantidade': NumberField(required=True, min_value=-999999999.9999, max_value=999999999.9999)
     }
 
 
 class PanamahProdutoComposicao(Model):
     schema = {
         'itens': ObjectListField(required=False, object_class=PanamahProdutoComposicaoItem),
-        'quantidade': NumberField(required=True)
+        'quantidade': NumberField(required=True, min_value=-999999999.9999, max_value=999999999.9999)
     }
 
 
@@ -234,8 +234,8 @@ class PanamahTrocaFormaPagamento(Model):
         'venda_id': StringField(required=False, json_name='vendaId'),
         'operador_id': StringField(required=False, json_name='operadorId'),
         'sequencial_pagamento': StringField(required=True, json_name='sequencialPagamento'),
-        'valor': NumberField(required=True),
-        'valor_contra_vale_ou_troco': NumberField(required=False, json_name='valorContraValeOuTroco')
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99),
+        'valor_contra_vale_ou_troco': NumberField(required=False, json_name='valorContraValeOuTroco', min_value=-999999999.99, max_value=999999999.99)
     }
 
 
@@ -243,9 +243,9 @@ class PanamahTrocaDevolucaoItem(Model):
     schema = {
         'desconto': NumberField(required=False),
         'produto_id': StringField(required=True, json_name='produtoId'),
-        'quantidade': NumberField(required=True),
-        'valor_total': NumberField(required=True, json_name='valorTotal'),
-        'valor_unitario': NumberField(required=True, json_name='valorUnitario'),
+        'quantidade': NumberField(required=True, min_value=-999999999.9999, max_value=999999999.9999),
+        'valor_total': NumberField(required=True, json_name='valorTotal', min_value=-999999999.99, max_value=999999999.99),
+        'valor_unitario': NumberField(required=True, json_name='valorUnitario', min_value=-999999999.99, max_value=999999999.99),
         'vendedor_id': StringField(required=False, json_name='vendedorId')
     }
 
@@ -262,7 +262,7 @@ class PanamahTrocaDevolucao(Model):
         'numero_caixa': StringField(required=False, json_name='numeroCaixa'),
         'operador_id': StringField(required=False, json_name='operadorId'),
         'sequencial': StringField(required=False),
-        'valor': NumberField(required=True),
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99),
         'vendedor_id': StringField(required=False, json_name='vendedorId')
     }
 
@@ -270,7 +270,7 @@ class PanamahTrocaDevolucao(Model):
 class PanamahEventoCaixaValoresDeclarados(Model):
     schema = {
         'forma_pagamento_id': StringField(required=True, json_name='formaPagamentoId'),
-        'valor': NumberField(required=True)
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99)
     }
 
 
@@ -291,7 +291,7 @@ class PanamahVendaPagamento(Model):
     schema = {
         'forma_pagamento_id': StringField(required=True, json_name='formaPagamentoId'),
         'sequencial': StringField(required=True),
-        'valor': NumberField(required=True)
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99)
     }
 
 
@@ -305,10 +305,10 @@ class PanamahVendaItem(Model):
         'produto_id': StringField(required=True, json_name='produtoId'),
         'codigo_registrado': StringField(required=False, json_name='codigoRegistrado'),
         'promocao': BooleanField(required=False),
-        'quantidade': NumberField(required=True),
+        'quantidade': NumberField(required=True, min_value=-999999999.9999, max_value=999999999.9999),
         'servico': NumberField(required=False),
-        'valor_total': NumberField(required=True, json_name='valorTotal'),
-        'valor_unitario': NumberField(required=True, json_name='valorUnitario'),
+        'valor_total': NumberField(required=True, json_name='valorTotal', min_value=-999999999.99, max_value=999999999.99),
+        'valor_unitario': NumberField(required=True, json_name='valorUnitario', min_value=-999999999.99, max_value=999999999.99),
         'tipo_preco': StringField(required=True, json_name='tipoPreco'),
         'custo': NumberField(required=False),
         'markup': NumberField(required=False),
@@ -335,8 +335,8 @@ class PanamahVenda(Model):
         'servico': NumberField(required=False),
         'tipo_desconto': StringField(required=False, json_name='tipoDesconto'),
         'tipo_preco': StringField(required=True, json_name='tipoPreco'),
-        'valor': NumberField(required=True),
-        'valor_itens_cancelados': NumberField(required=False),
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99),
+        'valor_itens_cancelados': NumberField(required=False, min_value=-999999999.99, max_value=999999999.99),
         'acrescimo': NumberField(required=False),
         'numero_caixa': StringField(required=False, json_name='numeroCaixa'),
         'itens': ObjectListField(required=True, object_class=PanamahVendaItem),
@@ -349,9 +349,9 @@ class PanamahCompraItem(Model):
         'acrescimo': NumberField(required=False),
         'desconto': NumberField(required=False),
         'produto_id': StringField(required=True, json_name='produtoId'),
-        'quantidade': NumberField(required=True),
-        'valor_total': NumberField(required=True, json_name='valorTotal'),
-        'valor_unitario': NumberField(required=True, json_name='valorUnitario')
+        'quantidade': NumberField(required=True, min_value=-999999999.9999, max_value=999999999.9999),
+        'valor_total': NumberField(required=True, json_name='valorTotal', min_value=-999999999.99, max_value=999999999.99),
+        'valor_unitario': NumberField(required=True, json_name='valorUnitario', min_value=-999999999.99, max_value=999999999.99)
     }
 
 
@@ -369,7 +369,7 @@ class PanamahCompra(Model):
         'efetiva': BooleanField(required=True, default=True),
         'quantidade_itens': NumberField(required=True, json_name='quantidadeItens'),
         'tipo_desconto': StringField(required=False, json_name='tipoDesconto'),
-        'valor': NumberField(required=True),
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99),
         'acrescimo': NumberField(required=False),
         'itens': ObjectListField(required=True, object_class=PanamahCompraItem)
     }
@@ -392,7 +392,7 @@ class PanamahEstoqueMovimentacao(Model):
         'local_estoque_id': StringField(required=True),
         'data_hora': DateField(required=True, json_name='dataHora'),
         'produto_id': StringField(required=True, json_name='produtoId'),
-        'quantidade': NumberField(required=True),
+        'quantidade': NumberField(required=True, min_value=-999999999.9999, max_value=999999999.9999),
         'custo': NumberField(required=True),
         'preco': NumberField(required=True),
         'markup': NumberField(required=False)
@@ -402,7 +402,7 @@ class PanamahEstoqueMovimentacao(Model):
 class PanamahTituloPagarPagamento(Model):
     schema = {
         'data_hora': DateField(required=True, json_name='dataHora'),
-        'valor': NumberField(required=True)
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99)
     }
 
 
@@ -413,11 +413,11 @@ class PanamahTituloPagar(Model):
         'loja_id': StringField(required=True, json_name='lojaId'),
         'fornecedor_id': StringField(required=True, json_name='fornecedorId'),
         'documento': StringField(required=True),
-        'valor_nominal': NumberField(required=True, json_name='valorNominal'),
-        'valor_juros': NumberField(required=True, json_name='valorJuros'),
-        'valor_multa': NumberField(required=True, json_name='valorMulta'),
-        'valor_devido': NumberField(required=True, json_name='valorDevido'),
-        'valor_pago': NumberField(required=True, json_name='valorPago'),
+        'valor_nominal': NumberField(required=True, json_name='valorNominal', min_value=-999999999.99, max_value=999999999.99),
+        'valor_juros': NumberField(required=True, json_name='valorJuros', min_value=-999999999.99, max_value=999999999.99),
+        'valor_multa': NumberField(required=True, json_name='valorMulta', min_value=-999999999.99, max_value=999999999.99),
+        'valor_devido': NumberField(required=True, json_name='valorDevido', min_value=-999999999.99, max_value=999999999.99),
+        'valor_pago': NumberField(required=True, json_name='valorPago', min_value=-999999999.99, max_value=999999999.99),
         'data_emissao': DateField(required=True, json_name='dataEmissao'),
         'data_vencimento': DateField(required=True, json_name='dataVencimento'),
         'pagamentos': ObjectListField(required=True, object_class=PanamahTituloPagarPagamento)
@@ -427,7 +427,7 @@ class PanamahTituloPagar(Model):
 class PanamahTituloReceberPagamento(Model):
     schema = {
         'data_hora': DateField(required=True, json_name='dataHora'),
-        'valor': NumberField(required=True)
+        'valor': NumberField(required=True, min_value=-999999999.99, max_value=999999999.99)
     }
 
 
@@ -438,11 +438,11 @@ class PanamahTituloReceber(Model):
         'loja_id': StringField(required=True, json_name='lojaId'),
         'cliente_id': StringField(required=True, json_name='clienteId'),
         'documento': StringField(required=True),
-        'valor_nominal': NumberField(required=True, json_name='valorNominal'),
-        'valor_juros': NumberField(required=True, json_name='valorJuros'),
-        'valor_multa': NumberField(required=True, json_name='valorMulta'),
-        'valor_devido': NumberField(required=True, json_name='valorDevido'),
-        'valor_pago': NumberField(required=True, json_name='valorPago'),
+        'valor_nominal': NumberField(required=True, json_name='valorNominal', min_value=-999999999.99, max_value=999999999.99),
+        'valor_juros': NumberField(required=True, json_name='valorJuros', min_value=-999999999.99, max_value=999999999.99),
+        'valor_multa': NumberField(required=True, json_name='valorMulta', min_value=-999999999.99, max_value=999999999.99),
+        'valor_devido': NumberField(required=True, json_name='valorDevido', min_value=-999999999.99, max_value=999999999.99),
+        'valor_pago': NumberField(required=True, json_name='valorPago', min_value=-999999999.99, max_value=999999999.99),
         'data_emissao': DateField(required=True, json_name='dataEmissao'),
         'data_vencimento': DateField(required=True, json_name='dataVencimento'),
         'pagamentos': ObjectListField(required=True, object_class=PanamahTituloReceberPagamento)

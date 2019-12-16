@@ -51,6 +51,7 @@ class ParentModel(Model):
         'g': ObjectField(required=True, object_class=ChildModel),
         'h': ObjectListField(required=True, object_class=ChildModel),
         'aliased': StringField(required=False, json_name='aLiAsEd'),
+        'minmax': NumberField(required=False, min_value=-50., max_value=200.)
     }
 
 
@@ -136,6 +137,19 @@ class TestClient(unittest.TestCase):
         instance.h = [ChildModel()]
         validate_then_dont_expect(
             self, instance, 'ParentModel.h -> objeto(s) no(s) indice(s) 0 deve(m) ser modelo(s) valido(s) do tipo ChildModel')
+
+        #Min/max validation
+        validate_then_dont_expect(self, instance, '*')
+        instance.minmax = -51
+        validate_then_expect(
+            self, instance, 'ParentModel.minmax -> valor %s menor que o limite mínimo de %s' % (str(-51.), str(-50.)))
+        instance.minmax = 201
+        validate_then_expect(
+            self, instance, 'ParentModel.minmax -> valor %s ultrapassa limite máximo de %s' % (str(201.), str(200.)))
+        instance.minmax = 50
+        validate_then_dont_expect(self, instance, '*')
+        instance.minmax = None
+        validate_then_dont_expect(self, instance, '*')
 
     def test_serialization(self):
         instance = ParentModel(
